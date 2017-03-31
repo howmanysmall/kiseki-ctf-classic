@@ -46,7 +46,7 @@ function onHumanoidDied(humanoid,player)
 	if player:FindFirstChild("leaderstats") then
 		local stats = player:FindFirstChild("leaderstats")
 		local deaths = stats:FindFirstChild(Settings.Wipeouts)
-		if deaths == nil then return end
+		if deaths == nil then return end  
 		deaths.Value = deaths.Value + 1
 		local killer = getKillerOfHumanoidIfStillInGame(humanoid)
 		handleKillCount(humanoid, player)
@@ -54,7 +54,6 @@ function onHumanoidDied(humanoid,player)
 end
 
 function onPlayerRespawn(property, player)
-	--script.ScreenGui:Clone().Parent = player:WaitForChild("PlayerGui")
 	if property == "Character" and player.Character then
 		local character = player.Character
 		local humanoid = character:FindFirstChild("Humanoid")
@@ -73,10 +72,11 @@ function getKillerOfHumanoidIfStillInGame(humanoid)
 	if tag ~= nil then
 		local whodunit = Players:FindFirstChild(tag.Value)
 		if whodunit then
+			-- didn du nuthin
 			return tag.Value
 		end
 	end
-	print("Cannot find the killer.")
+	print("[Server] Cannot find the killer.")
 	return nil
 end
 
@@ -99,11 +99,15 @@ function handleKillCount(humanoid,player)
 		if killer:FindFirstChild("leaderstats") then
 			local stats = killer:FindFirstChild("leaderstats")
 			local kills = stats:FindFirstChild(Settings.Kills)
-			if kills == nil then return end
-			if killer ~= player then
-				kills.Value = kills.Value + 1
-			else
-				kills.Value = kills.Value - 1
+			if kills == nil then 
+				print("[Server] Kills are not within the player's status folder.")
+				return 
+			else 
+				if killer ~= player then
+					kills.Value = kills.Value + 1
+				else
+					kills.Value = kills.Value - 1
+				end
 			end
 			if FirstBlood == "None" then
 				FirstBlood = killer.Name
@@ -159,7 +163,7 @@ function OnCaptureFlag(player)
 	end
 end
 
-local function OnReturnFlag(flagColor)
+function OnReturnFlag(flagColor)
 	local teamFlag = "Alpha"
 	if flagColor == BrickColor.new("Bright blue") then
 		teamFlag = "Bravo"
@@ -172,7 +176,13 @@ ReturnFlag.Event:connect(OnReturnFlag)
 
 function setMessage(text)
 	print("[Server] New message:",text)
-	MsgDisplay.Value = text
+	spawn(function()
+		MsgDisplay.Value = text
+		wait(8)
+		if MsgDisplay.Value == text then
+			MsgDisplay.Value = ""
+		end
+	end)
 end
 
 function setTime()
@@ -232,6 +242,10 @@ Players.PlayerAdded:connect(function(player)
 end)
 
 print("[Server] Kiseki CTF Classic Game System has loaded.")
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------
+-- Master Loop
+-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 while wait(1) do
 	if _Gv2.debug == false then
