@@ -8,7 +8,7 @@ local Debris = game:GetService("Debris")
 local Players = game:GetService("Players")
 local UserInput = game:GetService("UserInputService")
 local RepStorage = game:GetService("ReplicatedStorage")
-local ContextAction = Game:GetService("ContextActionService")
+local ContextAction = game:GetService("ContextActionService")
 
 -- Tool
 local Tool = script.Parent
@@ -236,8 +236,6 @@ UserInput.InputBegan:connect(function(input)
 		ToolSettings.Firing = true
 		Tool.Enabled = true
 		mainFiring()
-	elseif input.UserInputType == Enum.UserInputType.MouseButton2 then
-		GunZoom("Scope")
 	end
 end)
 
