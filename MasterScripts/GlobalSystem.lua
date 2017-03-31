@@ -14,8 +14,8 @@ local _Gv2 = require(Services.R_Storage:FindFirstChild("_Gv2"))
 
 -- Variables
 local implementedWeapons = {}
-local shirtGrid = _Gv2.shirtGrid
-local pantsGrid = _Gv2.pantsGrid
+local class_weapons = {}
+local shirtGrid,pantsGrid = _Gv2.shirtGrid,_Gv2.pantsGrid
 
 ----------------------------------------------------------------------------------------------------------------------------------------
 -- Functions / Methods
@@ -35,7 +35,7 @@ function objContains(needle, haystack)
 end
 
 -- a list of implemented weapons
-for i,v in ipairs(game.Lighting.WeaponContainer:children()) do
+for i,v in ipairs(Services.Lighting.WeaponContainer:children()) do
 	table.insert(implementedWeapons, v.Name)
 end
 
@@ -43,13 +43,11 @@ print("[Server] Implemented weapons: " .. table.concat(implementedWeapons, ", ")
 
 -- remove weapons that aren't implemented
 for class,weapons in pairs(_Gv2.weapon_grid) do
-	class_weapons = {}
 	for i,name in ipairs(weapons) do
 		if objContains(name,implementedWeapons) then
 			table.insert(class_weapons, name)
 		end
 	end
-	
 	_Gv2.weapon_grid[class] = class_weapons
 end
 
@@ -63,7 +61,7 @@ Services.Players.PlayerAdded:connect(function(newPlayer)
 	ammoHud.Text = "0/0"
 	ammoHud.Parent = newPlayer
 
-	newPlayer.Changed:connect(function(property) onPlayerRespawn(property, newPlayer) end )
+	newPlayer.Changed:connect(function(property) onPlayerRespawn(property, newPlayer) end)
 end)
 
 function onPlayerRespawn(property,player)
@@ -85,7 +83,7 @@ function onPlayerRespawn(property,player)
 			class = "Butcher" -- this is just a default debug class because fuck it
 		else
 			for i = 1, 10, 1 do
-				wait(.5)
+				wait(.25)
 				if player.Character:FindFirstChild("Shirt Graphic") then print("[Server] Found Shirt Graphic!") break end
 			end
 
@@ -222,6 +220,8 @@ function onPlayerRespawn(property,player)
 				end 
 				if bForce.force.y ~= 0 then
 					bForce.Parent = pTorso
+				else
+					bForce:Destroy()
 				end
 			end
 		end
