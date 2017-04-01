@@ -4,9 +4,13 @@
 -------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 local Services = {
+	Debris = game:GetService("Debris"),
 	Players = game:GetService("Players"),
-	Debris = game:GetService("Debris")
+	Lighting = game:GetService("Lighting");
 }
+
+local RbxUtil = LoadLibrary("RbxUtility")
+local Create = RbxUtil.Create
 
 local Gv2 = {
 	debug = false,
@@ -193,232 +197,240 @@ function Gv2:FindFirstEnemy(name, team_color)
 end
 
 function Gv2:GetBlood(startPos)
-	local blood = Instance.new("Part")
-	blood.FormFactor = 2
-	blood.Size = Vector3.new(1, .2, 1)
-	blood.BrickColor = BrickColor.Red()
-	blood.Position = startPos + Vector3.new(math.random(-5,5), math.random(-5,5), math.random(-5,5))
-	blood.Velocity = Vector3.new(math.random(-10,10), math.random(-10,10), math.random(-10,10))
-	blood.RotVelocity = Vector3.new(math.random(-3,3), math.random(-3,3), math.random(-3,3))
+	local blood = Create("Part") {
+		Name = "Blood"; -- no crips allowed
+		FormFactor = Enum.FormFactor.Custom;
+		Size = Vector3.new(1,.2,1);
+		BrickColor = BrickColor.new("Bright red");
+		Position = startPos + Vector3.new(math.random(-5,5), math.random(-5,5), math.random(-5,5));
+		Velocity = Vector3.new(math.random(-10,10), math.random(-10,10), math.random(-10,10));
+		RotVelocity = Vector3.new(math.random(-3,3), math.random(-3,3), math.random(-3,3));
+	}
 	return blood
 end
 
 local function GetBloodLocal(startPos)
-	local blood = Instance.new("Part")
-	blood.FormFactor = 2
-	blood.Size = Vector3.new(1, .2, 1)
-	blood.BrickColor = BrickColor.Red()
-	blood.Position = startPos + Vector3.new(math.random(-5,5), math.random(-5,5), math.random(-5,5))
-	blood.Velocity = Vector3.new(math.random(-10,10), math.random(-10,10), math.random(-10,10))
-	blood.RotVelocity = Vector3.new(math.random(-3,3), math.random(-3,3), math.random(-3,3))
+	local blood = Create("Part") {
+		Name = "Blood"; -- no crips allowed
+		FormFactor = Enum.FormFactor.Custom;
+		Size = Vector3.new(1,.2,1);
+		BrickColor = BrickColor.new("Bright red");
+		Position = startPos + Vector3.new(math.random(-5,5), math.random(-5,5), math.random(-5,5));
+		Velocity = Vector3.new(math.random(-10,10), math.random(-10,10), math.random(-10,10));
+		RotVelocity = Vector3.new(math.random(-3,3), math.random(-3,3), math.random(-3,3));
+	}
 	return blood
 end
 
-function Gv2:Stun(target_char, time)
-	local bodyVel = Instance.new("BodyVelocity")
-	bodyVel.velocity = Vector3.new(0, -50, 0)
-	bodyVel.maxForce = Vector3.new(1e+008, 1e+004, 1e+008)
-	bodyVel.Parent = target_char.Torso
+function Gv2:Stun(targetChar, time)
+	if targetChar:FindFirstChild("Torso") == nil then print("[Server] Stun: Cannot find targetChar's Torso.") return end
+	local bodyVel = Create("BodyVelocity") {
+		velocity = Vector3.new(0, -50, 0);
+		maxForce = Vector3.new(1e+008, 1e+004, 1e+008);
+		Parent = targetChar.Torso;
+	}
+	
 	Services.Debris:AddItem(bodyVel, time)
 end
 
-function Gv2:DealDamage(source_char, target_char, damage, stun, ignoreDef)
-	if stun == nil then stun = true end
-	if ignoreDef == nil then ignoreDef = false end
+function Gv2:DealDamage(source, target, damage, stun, ignoreDef)
+	if source and target and damage then
+		if stun == nil then stun = true end
+		if ignoreDef == nil then ignoreDef = false end
+		
+		local sourcePlayer = Services.Players:GetPlayerFromCharacter(source)
+		local targetPlayer = Services.Palyers:GetPlayerFromCharacter(target) or nil
+		if targetPlayer ~= nil then if sourcePlayer.TeamColor == targetPlayer.TeamColor then return end end
+		if target:FindFirstChild("ForceField") or source == target then return end
+		if source:FindFirstChild("Humanoid") == nil or target:FindFirstChild("Humanoid") == nil or source:FindFirstChild("Torso") == nil or target:FindFirstChild("Torso") == nil then return end
+		
+		local sourceHum = source:FindFirstChild("Humanoid")
+		local targetHum = target:FindFirstChild("Humanoid")
+		local sourceTorso = source:FindFirstChild("Torso")
+		local targetTorso = target:FindFirstChild("Torso")
+		
+		if sourceHum.Health <= 0 or targetHum.Health <= 0 then return end
+		
+		print("[Server] Unmodified Damage:", damage)
+		local newDamage = damage
+		local sourceClass = source:FindFirstChild("Class") or nil
+		local targetClass = target:FindFirstChild("Class") or nil
+		
+		if sourceClass ~= nil then
+			if sourceClass.Value == "Barbarian" then
+				-- CLOSE COMBAT MASTERY
+				-- QUOTE: devastating damage to foes that come within 18 meters of range. Max bonus damage is 90%.
+				-- 18 studs: formula => damage +% = (18 - dist) * 6
+				local dist = (sourceTorso.Position - targetTorso.Position).magnitude
+				local mod = (18 - dist) * 6
+				if mod < 0 then mod = 0 end
+				if mod > 90 then mod = 90 end
+				newDamage = newDamage * (1 + mod / 100)
+			elseif sourceClass.Value == "Phantom" then
+				-- ANNIHILATE
+				-- deals 4x damage
+				if source:FindFirstChild("Annihilate") then
+					local sourceAnnihilate = source:FindFirstChild("Annihilate")
+					if math.random(0,100) <= sourceAnnihilate.Value then
+						print("Phantom: Annihilate: Trigger")
+						if sourceTorso:FindFirstChild("Annihilation") then
+							sourceTorso.Annihilation:Play()
+						end
+					
+						for i=1,4 do
+							local blood = Gv2:GetBloodLocal(targetTorso.Position)
+							blood.Parent = workspace
+							Services.Debris:AddItem(blood, 3)
+						end
 
-	if source_char == nil or target_char == nil then return  end
-	if target_char:findFirstChild("ForceField") ~= nil then return end
-	if source_char.Humanoid.Health == 0 or target_char.Humanoid.Health == 0 then return end
-	if source_char == target_char then return end
-
-	local source_player = Services.Players:GetPlayerFromCharacter(source_char)
-	local target_player = Services.Players:GetPlayerFromCharacter(target_char)
-
-	if source_player == nil or target_player == nil then return end
-	if source_player.TeamColor == target_player.TeamColor then return end
-
-	if source_char:findFirstChild("Torso") == nil then return end
-	if target_char:findFirstChild("Torso") == nil then return end
-
-	print("Damage: Unmodified:", damage)
-
-	if source_char.Class.Value == "Barbarian" then
-		-- CLOSE COMBAT MASTERY
-		-- QUOTE: devastating damage to foes that come within 18 meters of range. Max bonus damage is 90%.
-		-- 18 studs: formula => damage +% = (18 - dist) * 6
-		local dist = (source_char.Torso.Position - target_char.Torso.Position).magnitude
-		local mod = (18 - dist) * 6
-		if mod < 0 then mod = 0 end
-		if mod > 90 then mod = 90 end
-		damage = damage * (1 + mod / 100)
-	end
-
-	if source_char.Class.Value == "Phantom" then
-		-- ANNIHILATE
-		-- deals 4x damage
-		if math.random(0,100) <= source_char.Annihilate.Value then
-
-			print("Phantom: Annihilate: Trigger")
-
-			-- awsum fx
-			source_char.Torso.Annihilation:play()
-			for i=1,4 do
-				local blood = GetBloodLocal(target_char.Torso.Position)
-				blood.Parent = game.Workspace
-				game:service("Debris"):AddItem(blood, 3)
+						newDamage = newDamage * 4 -- o snap!!!!
+						sourceAnnihilate.Value = 4.7 -- reset it
+					end
+				end
+			elseif sourceClass.Value == "Faerie Knight" then
+				-- DEATH FROM ABOVE
+				-- 1 studs above = 33% more damage
+	
+				if sourceTorso.Position.y > targetTorso.Position.y then
+					newDamage = newDamage * 1.33
+				end
 			end
-
-			damage = damage * 4 -- o snap!!!!
-
-			source_char.Annihilate.Value = 4.7 -- reset it
+			
+			if targetClass ~= nil then
+				if sourceClass.Value ~= "Exorcist" and targetClass.Value == "Exorcist" and newDamage >= 5 then
+					-- EYE FOR EYE
+					-- deals 20% of damage back to source
+					-- no infinite recursion plz
+					Gv2:DealDamage(target,source,newDamage/5,false)
+					Gv2:tagHumanoid(sourcePlayer,target.Humanoid)
+				elseif sourceClass.Value == "Exorcist" and Gv2.DemonPeople[targetClass.Value] == true then
+					-- XENOPHOBIA
+					-- 33% more damage to demon people
+					newDamage = newDamage * 1.333
+				end
+			end
 		end
-	end
- 
-	if source_char.Class.Value == "Faerie Knight" then
-		-- DEATH FROM ABOVE
-		-- 1 studs above = 33% more damage
-	
-		if source_char.Torso.Position.y > target_char.Torso.Position.y then
-			damage = damage * 1.33
+		
+		if source:FindFirstChild("DamageMod") and target:FindFirstChild("ArmorMod") then
+			local classDamageMod = source:FindFirstChild("DamageMod")
+			local targetArmorMod = target:FindFirstChild("ArmorMod")
+			if ignoreDef then
+				targetArmorMod.Value = 100
+			end
+			newDamage = newDamage / 100.0 * classDamageMod.Value / 100.0 * targetArmorMod.Value
 		end
-	end
-
-	if source_char.Class.Value ~= "Exorcist" and target_char.Class.Value == "Exorcist" and damage >= 5 then
-		-- EYE FOR EYE
-		-- deals 20% of damage back to source
-		-- no infinite recursion plz
-		Gv2:DealDamage(target_char, source_char, damage / 5, false)
-		Gv2:tagHumanoid(source_player, target_char.Humanoid)
-	end
-
-	if source_char.Class.Value == "Exorcist" and Gv2.DemonPeople[target_char.Class.Value] == true then
-		-- XENOPHOBIA
-		-- 33% more damage to demon people
-		damage = damage * 1.333
-	end
-
-	local classDamageMod = source_char.DamageMod
-	local targetArmorMod = target_char.ArmorMod
-
-	if ignoreDef then
-		targetArmorMod.Value = 100
-	end
-	damage = damage / 100.0 * classDamageMod.Value / 100.0 * targetArmorMod.Value
-
-	-- THICK SKIN
-	if target_char.Class.Value == "Barbarian" then
-		if target_char.ThickSkin.Value > 0 then
-			target_char.ThickSkin.Value = target_char.ThickSkin.Value - damage
-			damage = damage / 2
-			print("Barbarian: 	 Skin Trigger")
+		
+		if targetClass ~= nil then
+			if targetClass.Value == "Barbarian" and target:FindFirstChild("ThickSkin") then
+				-- THICK SKIN
+				if target.ThickSkin.Value > 0 then
+					target.ThickSkin.Value = target.ThickSkin.Value - newDamage
+					newDamage = newDamage / 2
+					print("[Server] Barbarian: Skin Trigger")
+				end
+			elseif targetClass.Value == "Phantom" then
+				-- IRREALITY
+				if math.random(0, 100) < 30 then
+					newDamage = 0
+					print("[Server] Phantom Irreality Trigger")
+				end
+				for i, v in pairs(target:GetChildren()) do
+					if v:IsA("Part") or v:IsA("UnionOperation") then
+						v.Transparency = 0
+					end
+				end
+			end
 		end
-	end
-
-	-- IRREALITY
-	if target_char.Class.Value == "Phantom" then
-		if math.random(0, 100) < 30 then
-			damage = 0
-			print("Phantom Irreality Trigger")
+		
+		if source:FindFirstChild("Class") and source:FindFirstChild("Buffs") then
+			local sourceClass = source:FindFirstChild("Class")
+			local sourceBuffs = source:FindFirstChild("Buffs")
+			
+			if sourceClass.Value == "Vampire" then
+				-- BLOODTHIRST
+				sourceHum.Health = sourceHum.Health + newDamage * .25
+			elseif sourceBuffs:FindFirstChild("Feeding Frenzy") ~= nil then
+				-- FEEDING FRENZY
+				sourceHum.Health = sourceHum.Health + newDamage * .2
+			end
 		end
-	end
-
-	-- BLOODTHIRST
-	if source_char.Class.Value == "Vampire" then
-		source_char.Humanoid.Health = source_char.Humanoid.Health + damage * .25
-	end
-
-	-- FEEDING FRENZY
-	if source_char.Buffs:findFirstChild("Feeding Frenzy") ~= nil then
-		source_char.Humanoid.Health = source_char.Humanoid.Health + damage * .2
-	end
-	
-	print("Damage: Modified:", damage)
-
-	target_char.Humanoid:TakeDamage(damage)
-
-	-- reveal phantoms
-	if target_char.Class.Value == "Phantom" then
-		if target_char.Humanoid.Health <= 0 then
-			target_char.Head.Transparency = 0
-			target_char["Left Arm"].Transparency = 0
-			target_char["Right Arm"].Transparency = 0
-			target_char["Left Leg"].Transparency = 0
-			target_char["Right Leg"].Transparency = 0
-			target_char["Torso"].Transparency = 0			
+		
+		print("[Server] Modified Damage:", newDamage)
+		targetHum:TakeDamage(newDamage)
+		
+		-- hitstun
+		if stun and newDamage > 2 and target:FindFirstChild("LeftArm1") == nil then -- we only hitstun for larger damage and when the guy isn't in a heavy suit
+			Gv2:Stun(target,.2)
 		end
-	end
-
-	-- hitstun
-	if stun and damage > 2 and target_char:findFirstChild("LeftArm1") == nil then -- we only hitstun for larger damage and when the guy isn't in a heavy suit
-		Stun(target_char, .2)
-	end
-
-	-- blood
-	blood = math.ceil(damage / 10.0)
-	if blood > 10 then blood = 10 end
-	for i=1, blood do
-		local blood = GetBloodLocal(target_char.Torso.Position)
-		blood.Parent = workspace
-		Services.Debris:AddItem(blood, 3)
+		
+		-- blood
+		local bloodCount = math.ceil(damage / 10.0)
+		if bloodCount > 10 then bloodCount = 10 end
+		for i = 1, bloodCount do
+			local blood = Gv2:GetBloodLocal(targetTorso.Position)
+			blood.Parent = workspace
+			Services.Debris:AddItem(blood, 3)
+		end
 	end
 end
 
 function Gv2:GetClosestPlayer(startChar)
 	if startChar:findFirstChild("Torso") == nil then return nil end
-	players = Services.Players:children()
-	minPlayer = nil
-	minDist = 1000
-	for i,v in ipairs(players) do
-		if v.Character ~= nil then
-			if v.Character ~= startChar then
-				if v.Character:findFirstChild("Torso") ~= nil then
-					if (v.Character.Torso.Position - startChar.Torso.Position).magnitude < minDist then
-						minPlayer = v
-						minDist = (v.Character.Torso.Position - startChar.Torso.Position).magnitude
-					end
+	local minPlayer = nil
+	local minDist = 1000
+	local sourceTorso = startChar:FindFirstChild("Torso")
+	
+	for i,v in ipairs(Services.Players:GetPlayers()) do
+		if v.Character then
+			local vChar = v.Character
+			if vChar ~= startChar and vChar:FindFirstChild("Torso") ~= nil then
+				local vTorso = vChar:FindFirstChild("Torso")
+				local vsMag = (vTorso.Position - sourceTorso.Position).magnitude < minDist
+				if vsMag < minDist then
+					minPlayer = v
+					minDist = vsMag
 				end
 			end
 		end
 	end
+	
 	return minPlayer
 end
 
 function Gv2:GetClosestEnemy(player, dist)
-	if player.Character == nil or player.Character:findFirstChild("Torso") == nil then return end
-
-	players = game.Players:children()
-
-	minPlayer = nil
-	minDist = dist
-	for i,v in ipairs(players) do
-		if v.Character ~= nil then
-			if v.TeamColor ~= player.TeamColor then
-				--if v.Character ~= startChar then
-					if v.Character:findFirstChild("Torso") ~= nil then
-						if (v.Character.Torso.Position - player.Character.Torso.Position).magnitude < minDist then
-							minPlayer = v
-							minDist = (v.Character.Torso.Position - player.Character.Torso.Position).magnitude
-						end
-					end
-				--end
+	if player.Character == nil or player.Character:FindFirstChild("Torso") == nil then return end
+	local minPlayer = nil
+	local minDist = 1000
+	local pChar = player.Character
+	
+	for i,v in ipairs(Services.Players:GetPlayers()) do
+		if v.Character then
+			if v.TeamColor ~= player.TeamColor and v.Character:findFirstChild("Torso") ~= nil then
+				if (v.Character.Torso.Position - player.Character.Torso.Position).magnitude < minDist then
+					minPlayer = v
+					minDist = (v.Character.Torso.Position - player.Character.Torso.Position).magnitude
+				end
 			end
 		end
 	end
+	
 	return minPlayer
 end
 
-function Gv2:tagHumanoid(ball, humanoid)
-	if ball.className == "Player" then
-		local new_tag = Instance.new("ObjectValue")
-		new_tag.Name = "creator"
-		new_tag.Value = ball
-		new_tag.Parent = humanoid
+function Gv2:tagHumanoid(targ, humanoid)
+	if targ.Character ~= nil then
+		local new_tag = Create("ObjectValue") {
+			Name = "creator";
+			Value = targ;
+			Parent = humanoid;
+		}
+		
 		Services.Debris:AddItem(new_tag, 2)
 		return
 	end
 
-	local tag = ball:findFirstChild("creator")
-	if tag ~= nil then
+	if targ:FindFirstChild("creator") then
+		local tag = targ:FindFirstChild("creator")
 		local new_tag = tag:clone()
 		new_tag.Parent = humanoid
 		Services.Debris:AddItem(new_tag, 2)
@@ -432,7 +444,7 @@ function Gv2:GiveGun(player, properties)
 		return
 	end
 
-	local gun = game.Lighting.GunTemplate:Clone()
+	local gun = Services.Lighting.GunTemplate:Clone()
 	
 	for i,v in ipairs(properties:GetChildren()) do
 		v:Clone().Parent = gun
