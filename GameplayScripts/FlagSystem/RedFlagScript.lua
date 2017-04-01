@@ -96,7 +96,7 @@ function bindFlagTouched(targ)
 			local player = Players:GetPlayerFromCharacter(newTarg.Parent) 
 			local humanoid = newTarg.Parent:FindFirstChild('Humanoid')
 			if humanoid == nil or humanoid.Health <= 0 then return end
-			if player.TeamColor ~= Settings.TeamColor then
+			if player.TeamColor ~= Settings.TeamColor and Settings.PickedUp == false then
 				pickupFlag(player)
 			else
 				if Settings.AtSpawn == false and Settings.PickedUp == false then
