@@ -14,7 +14,8 @@ local Settings = {
 	Kills = "Kills";
 	Wipeouts = "Wipeouts";
 	Captures = "Captures";
-	DefaultGameTime = 600;
+	DefaultGameTime = 180;
+	FirstBlood = "None",
 }
 
 -- Main Game Variables
@@ -49,6 +50,11 @@ function onHumanoidDied(humanoid,player)
 		if deaths == nil then return end  
 		deaths.Value = deaths.Value + 1
 		local killer = getKillerOfHumanoidIfStillInGame(humanoid)
+		if Settings.FirstBlood == "None" and killer ~= nil then
+			Settings.FirstBlood = killer.Name
+			Sounds.FirstBlood:Play()
+			setMessage(Settings.FirstBlood,"is the first person to kill another player!")
+		end
 		handleKillCount(humanoid, player)
 	end
 end
@@ -105,13 +111,7 @@ function handleKillCount(humanoid,player)
 			else 
 				if killer ~= player then
 					kills.Value = kills.Value + 1
-				else
-					kills.Value = kills.Value - 1
 				end
-			end
-			if FirstBlood == "None" then
-				FirstBlood = killer.Name
-				setMessage(FirstBlood,"is the first person to kill another player!")
 			end
 		end
 	end
@@ -192,9 +192,9 @@ end
 function selectMap()
 	local returnMap
 	local sdk = Maps:GetChildren()
-	local mdr = math.random(1, #sdk)
+	local mdr = math.random(1,8)
 	returnMap = sdk[mdr]:Clone()
-	wait(5)
+	wait(3)
 	setMessage("Next Map: "..returnMap.Name)
 	wait(5)
 	if workspace:FindFirstChild(CurrentMap) then
@@ -228,6 +228,7 @@ Players.PlayerAdded:connect(function(player)
 	end
 	
 	script.ScreenGui:Clone().Parent = player:WaitForChild("PlayerGui")
+	script.FPSCounter:Clone().Parent = player:WaitForChild("PlayerGui")
 	
 	--------------------------------------------------------------------------------
 	-- Setting up the player's character.
@@ -308,7 +309,7 @@ while wait(1) do
 				RedScore = 0
 				BluScore = 0
 				Gamemode = "Intermission"
-				FirstBlood = "None"
+				Settings.FirstBlood = "None"
 				resetLeaderboardValues()
 			end
 		end
