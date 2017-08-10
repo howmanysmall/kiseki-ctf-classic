@@ -1,51 +1,58 @@
-ball = script.Parent
-local r_storage = game:GetService("ReplicatedStorage")
-local _Gv2 = require(r_storage:FindFirstChild("_Gv2"))
-damageTag = ball.Damage
+-------------------------------------------------------------------------------------------------------------------------------------------
+-- Kiseki CTF: Classic Edition Gun System
+-- Scripted by Clockwork, Modified by shloid
+-------------------------------------------------------------------------------------------------------------------------------------------
+
+-- Services
+local Rep = game:GetService("ReplicatedStorage")
+local _Gv2 = require(Rep:FindFirstChild("_Gv2"))
+
+-- Variables
+local Ball = script.Parent
+local damageTag = Ball.Damage
+local CreatorV = Ball:findFirstChild("creator")
+local Creator = CreatorV.Value
+local ExplosionSound = (Ball:FindFirstChild("Explosion") or nil)
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+-- Functions / Methods
+-------------------------------------------------------------------------------------------------------------------------------------------
 
 function onTouched(hit)
-	if hit.Name ~= "Head" then return end
 	if hit.Parent == nil then return end
 	local humanoid = hit.Parent:findFirstChild("Humanoid")
-
-	if humanoid ~= nil then
-		_Gv2:tagHumanoid(ball, humanoid)
-
-		local tag = ball:findFirstChild("creator")
-
-		if tag.Value.Character == humanoid.Parent then
-			humanoid:TakeDamage(50)
+	if humanoid then
+		_Gv2:tagHumanoid(Ball, humanoid)
+		if Creator.Character == humanoid.Parent then
+			humanoid:TakeDamage(20)
 		else
-			_Gv2:DealDamage(tag.Value.Character, humanoid.Parent, damageTag.Value)
+			_Gv2:DealDamage(Creator.Character, humanoid.Parent, damageTag.Value)
 		end
 	end
 end
 
 function explode(hit)
-	if hit.Parent == ball.creator.Value.Character then return end
-	if hit.Parent.Parent == ball.creator.Value.Character then return end
-	if hit.Parent.Parent.Parent == ball.creator.Value.Character then return end
-
 	connection:disconnect()
-	ball.Explosion:play()
-	local explosion = Instance.new("Explosion")
-	explosion.BlastPressure = 0
-
-	if ball.Name == "Mortar" then
-		explosion.BlastRadius = 12
-	else
-		explosion.BlastRadius = 6
+	if ExplosionSound ~= nil then
+		ExplosionSound:Play()
 	end
-
 	
-	explosion.Position = ball.Position
-	explosion.Parent = game.Workspace
-	explosion.Hit:connect(function(part, distance) onTouched(part) end)
+	local explosion = Instance.new("Explosion",workspace)
+	explosion.BlastPressure = 10000
+	explosion.DestroyJointRadiusPercent = 0
+	explosion.BlastRadius = 12
+	explosion.Position = Ball.Position
+	explosion.Hit:connect(function(part, distance)
+		 onTouched(part)
+	end)
+	
 	wait(.3)
-	ball:remove()
+	Ball:Destroy()
 end
 
-connection = ball.Touched:connect(explode)
+connection = Ball.Touched:connect(explode)
 
-wait(5)
-ball.Parent = nil
+spawn(function()
+	wait(5)
+	Ball.Parent = nil
+end)
