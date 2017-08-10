@@ -7,9 +7,10 @@ local Services = {
 	Debris = game:GetService("Debris"),
 	Players = game:GetService("Players"),
 	Lighting = game:GetService("Lighting");
+	ContentProvider = game:GetService("ContentProvider");
 }
 
-local RbxUtil = LoadLibrary("RbxUtility")
+local RbxUtil = require(Services.Lighting:FindFirstChild("RbxUtility"))
 local Create = RbxUtil.Create
 
 local Gv2 = {
@@ -136,20 +137,23 @@ local Gv2 = {
 	},
 	
 	charGrid = {
-		["Phantom"]           = "http://www.roblox.com/asset/?id=2729205",
-		["Barbarian"]         = "http://www.roblox.com/asset/?id=2729207",
-		["Wellwisher"]        = "http://www.roblox.com/asset/?id=2729212",
-		["Tinkerer"]          = "http://www.roblox.com/asset/?id=2729217",
-		["Faerie Knight"]     = "http://www.roblox.com/asset/?id=2749266",
-		["Butcher"]           = "http://www.roblox.com/asset/?id=2749268",
-		["Machinist"]         = "http://www.roblox.com/asset/?id=2749263",
-		["Exorcist"]          = "http://www.roblox.com/asset/?id=2801405",
-		["Apprentice"]        = "http://www.roblox.com/asset/?id=2801397",
-		["Witch Doctor"]      = "http://www.roblox.com/asset/?id=2902054",
-		["Sensational Man"]   = "http://www.roblox.com/asset/?id=4843677",
-		["Vampire"]           = "http://www.roblox.com/asset/?id=6334561",
-		["Shinobi"]           = "http://www.roblox.com/asset/?id=6334559",
-		["Sensational Man 2"] = "http://www.roblox.com/asset/?id=13837268",
+		-- offensive classes: butcher, barbarian, faerie knight, apprentice, phantom
+		-- defensive classes: vampire, machinist, sensational man, witch doctor
+		-- supportive classes: wellwisher, tinkerer, shinobi, exorcist
+		["Phantom"]           = "http://www.roblox.com/asset/?id=2729205", -- 1, defensive #2
+		["Barbarian"]         = "http://www.roblox.com/asset/?id=2729207", -- 2, offensive #2
+		["Wellwisher"]        = "http://www.roblox.com/asset/?id=2729212", -- 3, supportive #1
+		["Tinkerer"]          = "http://www.roblox.com/asset/?id=2729217",-- 4, defensive #1
+		["Faerie Knight"]     = "http://www.roblox.com/asset/?id=2749266", -- 5, offensive #3
+		["Butcher"]           = "http://www.roblox.com/asset/?id=2749268", -- 6, offensive #1
+		["Machinist"]         = "http://www.roblox.com/asset/?id=2749263", -- 7, defensive #1
+		["Exorcist"]          = "http://www.roblox.com/asset/?id=2801405", -- 8, supportive #2
+		["Apprentice"]        = "http://www.roblox.com/asset/?id=2801397", -- 9, 
+		["Witch Doctor"]      = "http://www.roblox.com/asset/?id=2902054", -- 10
+		["Sensational Man"]   = "http://www.roblox.com/asset/?id=4843677", -- 11
+		["Vampire"]           = "http://www.roblox.com/asset/?id=6334561", -- 12
+		["Shinobi"]           = "http://www.roblox.com/asset/?id=6334559", -- 13
+		["Sensational Man 2"] = "http://www.roblox.com/asset/?id=13837268", -- (still 12)
 	},
 	
 	pantsGrid = {
@@ -186,6 +190,105 @@ local Gv2 = {
 -------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Functions / Methods
 -------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+local function DamageBillboard(pos,text,rate,time,color)
+	local pos = pos or Vector3.new(0,0,0)
+	local time = time or 2
+	local color = color or Color3.new(1,0,0)
+	local pos = pos + Vector3.new(0,5,0)
+	
+	local ep = Create("Part") {
+		Name = "Effect",
+		Size = Vector3.new(1,1,1),
+		TopSurface = "Smooth",
+		BottomSurface = "Smooth",
+		CFrame = CFrame.new(pos),
+		Anchored = true,
+		CanCollide = false,
+		Transparency = 1
+	}
+	
+	local bb = Create("BillboardGui") {
+		Size = UDim2.new(3,0,3,0),
+		Adornee = ep,
+		Parent = ep,
+	}
+	
+	local tl = Create("TextLabel") {
+		BackgroundTransparency = 1,
+		Size = UDim2.new(1,0,1,0),
+		Text = text,
+		TextColor3 = color,
+		TextScaled = true,
+		Font = "Arial",
+		Parent = bb,
+	}
+	Services.Debris:AddItem(ep,time+.1)
+	ep.Parent = workspace
+	delay(0,function()
+		local frames = time / rate
+		for frame = 1,frames do
+			wait(rate)
+			local percent = frame/frames
+			ep.CFrame = CFrame.new(pos) + Vector3.new(0,5*percent,0)
+			tl.TextTransparency = percent
+		end
+		ep:remove()
+	end)
+end
+
+function Gv2:LoadAssets(AssetList)
+	-- Takes an asset list and preloads it. Will not wait for them to load. 
+	for _, AssetId in pairs(AssetList) do
+		Services.ContentProvider:Preload("rbxassetid://" .. AssetId)
+	end
+end
+
+function Gv2:DamageBillboard(pos,text,rate,time,color)
+	local pos = pos or Vector3.new(0,0,0)
+	local time = time or 2
+	local color = color or Color3.new(1,0,0)
+	local pos = pos + Vector3.new(0,5,0)
+	
+	local ep = Create("Part") {
+		Name = "Effect",
+		Size = Vector3.new(1,1,1),
+		TopSurface = "Smooth",
+		BottomSurface = "Smooth",
+		CFrame = CFrame.new(pos),
+		Anchored = true,
+		CanCollide = false,
+		Transparency = 1
+	}
+	
+	local bb = Create("BillboardGui") {
+		Size = UDim2.new(3,0,3,0),
+		Adornee = ep,
+		Parent = ep,
+	}
+	
+	local tl = Create("TextLabel") {
+		BackgroundTransparency = 1,
+		Size = UDim2.new(1,0,1,0),
+		Text = text,
+		TextColor3 = color,
+		TextScaled = true,
+		Font = "Arial",
+		Parent = bb,
+	}
+	Services.Debris:AddItem(ep,time+.1)
+	ep.Parent = workspace
+	delay(0,function()
+		local frames = time / rate
+		for frame = 1,frames do
+			wait(rate)
+			local percent = frame/frames
+			ep.CFrame = CFrame.new(pos) + Vector3.new(0,5*percent,0)
+			tl.TextTransparency = percent
+		end
+		ep:remove()
+	end)
+end
 
 function Gv2:FindFirstEnemy(name, team_color)
 	for i,v in ipairs(game.Players:children()) do
@@ -224,6 +327,7 @@ end
 
 function Gv2:Stun(targetChar, time)
 	if targetChar:FindFirstChild("Torso") == nil then print("[Server] Stun: Cannot find targetChar's Torso.") return end
+	local time = time or math.random(2,3)	
 	local bodyVel = Create("BodyVelocity") {
 		velocity = Vector3.new(0, -50, 0);
 		maxForce = Vector3.new(1e+008, 1e+004, 1e+008);
@@ -235,19 +339,22 @@ end
 
 function Gv2:DealDamage(source, target, damage, stun, ignoreDef)
 	if source and target and damage then
+		print("[Server] Source, Target, and Damage exist.")
 		if stun == nil then stun = true end
 		if ignoreDef == nil then ignoreDef = false end
 		
 		local sourcePlayer = Services.Players:GetPlayerFromCharacter(source)
-		local targetPlayer = Services.Palyers:GetPlayerFromCharacter(target) or nil
+		local targetPlayer = Services.Players:GetPlayerFromCharacter(target) or nil
+		print("[Server] Both players exist.")
 		if targetPlayer ~= nil then if sourcePlayer.TeamColor == targetPlayer.TeamColor then return end end
-		if target:FindFirstChild("ForceField") or source == target then return end
+		if target:FindFirstChild("ForceField") or source == target then print("[Server] Target might have a forcefield on or the source is the target.") return end
 		if source:FindFirstChild("Humanoid") == nil or target:FindFirstChild("Humanoid") == nil or source:FindFirstChild("Torso") == nil or target:FindFirstChild("Torso") == nil then return end
 		
 		local sourceHum = source:FindFirstChild("Humanoid")
 		local targetHum = target:FindFirstChild("Humanoid")
 		local sourceTorso = source:FindFirstChild("Torso")
 		local targetTorso = target:FindFirstChild("Torso")
+		print("[Server] Humanoid and Torso for both source and target exist.")
 		
 		if sourceHum.Health <= 0 or targetHum.Health <= 0 then return end
 		
@@ -255,8 +362,10 @@ function Gv2:DealDamage(source, target, damage, stun, ignoreDef)
 		local newDamage = damage
 		local sourceClass = source:FindFirstChild("Class") or nil
 		local targetClass = target:FindFirstChild("Class") or nil
+		Gv2:tagHumanoid(sourcePlayer,targetHum)
 		
 		if sourceClass ~= nil then
+			print("[Server] Source class is not nil.")
 			if sourceClass.Value == "Barbarian" then
 				-- CLOSE COMBAT MASTERY
 				-- QUOTE: devastating damage to foes that come within 18 meters of range. Max bonus damage is 90%.
@@ -297,6 +406,7 @@ function Gv2:DealDamage(source, target, damage, stun, ignoreDef)
 			end
 			
 			if targetClass ~= nil then
+				print("[Server] Target class is not nil.")
 				if sourceClass.Value ~= "Exorcist" and targetClass.Value == "Exorcist" and newDamage >= 5 then
 					-- EYE FOR EYE
 					-- deals 20% of damage back to source
@@ -312,6 +422,7 @@ function Gv2:DealDamage(source, target, damage, stun, ignoreDef)
 		end
 		
 		if source:FindFirstChild("DamageMod") and target:FindFirstChild("ArmorMod") then
+			print("[Server] DamageMod and ArmorMod exist!")
 			local classDamageMod = source:FindFirstChild("DamageMod")
 			local targetArmorMod = target:FindFirstChild("ArmorMod")
 			if ignoreDef then
@@ -321,6 +432,7 @@ function Gv2:DealDamage(source, target, damage, stun, ignoreDef)
 		end
 		
 		if targetClass ~= nil then
+			print("[Server] Target class is not nil.")
 			if targetClass.Value == "Barbarian" and target:FindFirstChild("ThickSkin") then
 				-- THICK SKIN
 				if target.ThickSkin.Value > 0 then
@@ -342,7 +454,8 @@ function Gv2:DealDamage(source, target, damage, stun, ignoreDef)
 			end
 		end
 		
-		if source:FindFirstChild("Class") and source:FindFirstChild("Buffs") then
+		if sourceClass ~= nil and source:FindFirstChild("Buffs") then
+			print("[Server] Source class and source buffs are not nil.")
 			local sourceClass = source:FindFirstChild("Class")
 			local sourceBuffs = source:FindFirstChild("Buffs")
 			
@@ -356,6 +469,7 @@ function Gv2:DealDamage(source, target, damage, stun, ignoreDef)
 		end
 		
 		print("[Server] Modified Damage:", newDamage)
+		DamageBillboard(target:FindFirstChild("Head").Position,"-"..tostring(damage),1/3)
 		targetHum:TakeDamage(newDamage)
 		
 		-- hitstun
@@ -367,7 +481,7 @@ function Gv2:DealDamage(source, target, damage, stun, ignoreDef)
 		local bloodCount = math.ceil(damage / 10.0)
 		if bloodCount > 10 then bloodCount = 10 end
 		for i = 1, bloodCount do
-			local blood = Gv2:GetBloodLocal(targetTorso.Position)
+			local blood = GetBloodLocal(targetTorso.Position)
 			blood.Parent = workspace
 			Services.Debris:AddItem(blood, 3)
 		end
@@ -418,7 +532,7 @@ function Gv2:GetClosestEnemy(player, dist)
 end
 
 function Gv2:tagHumanoid(targ, humanoid)
-	if targ.Character ~= nil then
+	if targ ~= nil and humanoid ~= nil then
 		local new_tag = Create("ObjectValue") {
 			Name = "creator";
 			Value = targ;
@@ -427,13 +541,6 @@ function Gv2:tagHumanoid(targ, humanoid)
 		
 		Services.Debris:AddItem(new_tag, 2)
 		return
-	end
-
-	if targ:FindFirstChild("creator") then
-		local tag = targ:FindFirstChild("creator")
-		local new_tag = tag:clone()
-		new_tag.Parent = humanoid
-		Services.Debris:AddItem(new_tag, 2)
 	end
 end
 
@@ -449,6 +556,7 @@ function Gv2:GiveGun(player, properties)
 	for i,v in ipairs(properties:GetChildren()) do
 		v:Clone().Parent = gun
 	end
+	
 	local settingsMod = require(properties.SettingsModule)
 	
 	gun.Name = properties.Name
