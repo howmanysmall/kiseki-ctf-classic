@@ -20,3 +20,5 @@ A rescripted version of Clockwork and Conix's game "Kiseki". This is the source 
 * A ragdoll system will be added too.
 * Example place will be created for those who are interested in using Kiseki CTF: Classic Edition for their own game.
 * Modifying more legacy coding.
+* Adding a Jetboots system.
+* Adding a class UI system.
