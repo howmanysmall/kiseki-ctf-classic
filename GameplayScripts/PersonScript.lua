@@ -6,7 +6,6 @@
 -- Variables
 local Players = game:GetService("Players")
 local Character = script.Parent
-
 local Player = (Players:GetPlayerFromCharacter(Character) or nil)
 
 -------------------------------------------------------------------------------------------------------------------------------------------
