@@ -1,6 +1,6 @@
 --------------------------------------------------------------------------------------------------------------------------------
 -- Blue Flag Script
--- By shloid (da man!!!)
+-- Scripted by shloid
 --------------------------------------------------------------------------------------------------------------------------------
 
 -- Services
@@ -68,6 +68,9 @@ end
 
 function pickupFlag(player)
 	RepStorage.GameMessage.Value = ""..player.Name.." has taken Bravo Team's flag!"
+	if workspace:FindFirstChild("Sounds"):FindFirstChild("FlagCaptured") then
+		workspace:FindFirstChild("Sounds"):FindFirstChild("FlagCaptured"):Play()
+	end
 	Settings.Carrier = player.Name
 	Settings.AtSpawn = false
 	Settings.PickedUp = true
