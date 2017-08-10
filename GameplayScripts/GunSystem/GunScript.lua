@@ -1,6 +1,6 @@
 -------------------------------------------------------------------------------------------------------------------------------------------
 -- Kiseki CTF: Classic Edition Gun System
--- Rescripted by shloid (da man!!!) 
+-- Scripted by Clockwork, Modified by shloid
 -------------------------------------------------------------------------------------------------------------------------------------------
 
 -- Services
@@ -26,6 +26,7 @@ local Sounds = {
 	Reload = (Handle:FindFirstChild("Reload") or nil);
 	Startup = (Handle:FindFirstChild("Startup") or nil);
 }
+local HandleMesh = Handle.Mesh
 
 -- Modules
 local _Gv2 = require(RepStorage:FindFirstChild("_Gv2"))
@@ -40,60 +41,73 @@ local ToolSettings = {
 	Reloading = false;
 	Equipped = false;
 }
-print("variables are a-ok")
--- removed ones
---reloadTimeTag = Tool.ReloadTime
---rateOfFireTag = Tool.RateOfFire
---startUpTimeTag = Tool.StartupTime
---bulletSpeedTag = Tool.BulletSpeed
---recoilTag = Tool.Recoil
+
+print("["..Tool.Name.."] variables have successfully loaded.")
 
 -------------------------------------------------------------------------------------------------------------------------------------------
 -- Functions / Methods
 -------------------------------------------------------------------------------------------------------------------------------------------
 
 function fire(v, playSound)
-	if playSound then Sounds.Fire:Play() end
 	if ToolSettings.Firing == false or ToolSettings.Reloading == true or ToolSettings.Equipped == false then return end
-	
-	-- Variables
-	local new_script = nil
-	local missile = Bullet:Clone()
-	missile.Anchored = false
-	missile.Transparency = 0
-	local spawnPos = Handle.Position
-
-	if Tool.Name == "LAW" then
+	if playSound then Sounds.Fire:Play() end
+	if Tool.Name == "LAW" or Tool.Name == "M79" then
+		local spawnPos = Handle.Position
+		local missile = Bullet:Clone()
+		missile.Anchored = false
+		missile.Transparency = 0
+		
 		missile.Name = "Mortar"
 		v = Vector3.new(v.x, 0, v.z)
 		v = v.unit
 		v = v + Vector3.new(0, 2, 0)
 		v = v.unit
-	end
+		
+		missile.CFrame = CFrame.new(spawnPos, spawnPos + v)
+		missile.Velocity = v * (SettingsModule.BulletSpeed/2)
+		local new_script = script.GrenadeScript:Clone()
+		
+		-- add damage & creator tag
+		local damageTag = Instance.new("IntValue",missile)
+		damageTag.Name = "Damage"
+		damageTag.Value = SettingsModule.Damage
 
-	missile.CFrame = CFrame.new(spawnPos, spawnPos + v)
-	missile.Velocity = v * SettingsModule.BulletSpeed
-
-	-- add scripts
-	if Tool.Name == "M79" or Tool.Name == "LAW" then
-		 new_script = script.GrenadeScript:Clone()
+		local creator_tag = Instance.new("ObjectValue",missile)
+		creator_tag.Name = "creator"
+		creator_tag.Value = Player
+		
+		new_script.Parent = missile
+		new_script.Disabled = false
+		missile.Parent = workspace
 	else
-		 new_script = script.BulletScript:Clone()
+		local ray = Ray.new(Handle.CFrame.p, (Mouse.Hit.p - Handle.CFrame.p).unit * 300)
+		local part, position = workspace:FindPartOnRay(ray, Character, false, true)
+ 
+		local beam = Instance.new("Part", workspace)
+		beam.BrickColor = Player.TeamColor
+		beam.FormFactor = "Custom"
+		beam.Material = "Neon"
+		beam.Transparency = 0.25
+		beam.Anchored = true
+		beam.Locked = true
+		beam.CanCollide = false
+ 
+		local distance = (Handle.CFrame.p - position).magnitude
+		beam.Size = Vector3.new(0.3, 0.3, distance)
+		beam.CFrame = CFrame.new(Handle.CFrame.p, position) * CFrame.new(0, 0, -distance / 2)
+		
+		local creator_tag = Instance.new("ObjectValue",beam)
+		creator_tag.Name = "creator"
+		creator_tag.Value = Player
+ 
+		Debris:AddItem(beam, 0.1)
+		if part then
+ 			local hithum = (part.Parent:FindFirstChild("Humanoid") or part.Parent.Parent:FindFirstChild("Humanoid"))
+			if hithum then
+				_Gv2:DealDamage(Character,hithum.Parent,SettingsModule.Damage)
+			end
+		end
 	end
-	
-	new_script.Disabled = false
-	new_script.Parent = missile
-
-	-- add damage & creator tag
-	local damageTag = Instance.new("IntValue",missile)
-	damageTag.Name = "Damage"
-	damageTag.Value = SettingsModule.Damage
-
-	local creator_tag = Instance.new("ObjectValue",missile)
-	creator_tag.Name = "creator"
-	creator_tag.Value = Player
-
-	missile.Parent = workspace
 end
 
 function Reload()
@@ -103,23 +117,27 @@ function Reload()
 	if msg then msg.Text = "Reloading..." end
 	if Sounds.Reload ~= nil then Sounds.Reload:play() end
 
-	reloadDebounce = false
-	firing = false
+	ToolSettings.Reloading = true
+	ToolSettings.Firing = false
 	Tool.Enabled = false
 
 	if Tool.Name ~= "Spas-12" then
-		wait(SettingsModule.ReloadTime)
+		if Tool.Name == "M79" or Tool.Name == "LAW" then
+			-- do nothing
+		else
+			wait(Sounds.Reload.TimeLength)
+		end
 	else
 		for i = 1, 7 do
 			wait(SettingsModule.ReloadTime / 7)
 			Sounds.Reload:Play()
 		end
 	end
-
 	print("[Server] Gun: Reloaded.")
-	Tool.Enabled = true
 	ToolSettings.Clip = ToolSettings.Magazine
-	reloadDebounce = true
+	onAmmoChanged()
+	Tool.Enabled = true
+	ToolSettings.Reloading = false
 end
 
 function onAmmoChanged()
@@ -155,6 +173,7 @@ function mainFiring(name, inputState, inputObject)
 		wait(SettingsModule.StartupTime)
 		
 		while (ToolSettings.Firing == true) do
+			--wait()
 			if Tool.Name == "Spas-12" then
 				rounds = 4
 				chain = 5
@@ -169,43 +188,40 @@ function mainFiring(name, inputState, inputObject)
 				end
 			end
 			
-			local targetPos = Character.Humanoid.TargetPoint
-			local lookAt = CFrame.new(Handle.Position, targetPos) -- lookAt points at the target
-				  lookAt = lookAt * CFrame.fromEulerAnglesXYZ(
-						   math.rad(math.random(-chain * SettingsModule.Recoil, chain * SettingsModule.Recoil)) / 4,
-						   math.rad(math.random(-chain * SettingsModule.Recoil, chain * SettingsModule.Recoil)) / 8,
-						   0
-				   )
-				
-			--if rounds > 1 then
-				for i = 1, rounds do
-					if i ~= 1 then
-						fire(lookAt.lookVector, false)
-					else
-						fire(lookAt.lookVector, true)
-					end
-					wait()
+			for i = 1, rounds do
+				local targetPos = Character.Humanoid.TargetPoint
+				local lookAt = CFrame.new(Handle.Position, targetPos) -- lookAt points at the target
+					  lookAt = lookAt * CFrame.fromEulerAnglesXYZ(
+							   math.rad(math.random(-chain * SettingsModule.Recoil, chain * SettingsModule.Recoil)) / 4,
+							   math.rad(math.random(-chain * SettingsModule.Recoil, chain * SettingsModule.Recoil)) / 8,
+							   0
+				 	  )
+				if i ~= 1 then
+					fire(lookAt.lookVector, false)
+				else
+					fire(lookAt.lookVector, true)
 				end
-			--else
-				--fire(lookAt.lookVector, true)
-				--wait()
-			--end
+				wait()
+			end
 
 			-- recoil cap
-			if chain < 10 then
-				chain = chain + 1
-			end
+			if chain < 10 then chain = chain + 1 end
 
 			ToolSettings.Clip = ToolSettings.Clip - 1
 			onAmmoChanged()
 			print("[Server]",Tool.Name,"'s Clip:",ToolSettings.Clip)
 			Tool.Enabled = false
+			
+			if ToolSettings.Clip <= 0 then
+				ToolSettings.Reloading = true
+				Reload()
+			end
 			wait(SettingsModule.FireRate)
+			Tool.Enabled = true
 			if Tool.Name == "Socom" then
 				ToolSettings.Firing = false
 				break
 			end
-			Tool.Enabled = true
 		end
 		
 		ToolSettings.Firing = false
@@ -222,20 +238,16 @@ end
 -------------------------------------------------------------------------------------------------------------------------------------------
 
 UserInput.InputBegan:connect(function(input)
-	if ToolSettings.Equipped == false then return end
-	
-	if input.UserInputType == Enum.UserInputType.Gamepad1 then
-		if input.KeyCode == Enum.KeyCode.ButtonY then
-			--Reload()
-		end
-	elseif input.UserInputType == Enum.UserInputType.Keyboard then
+	if ToolSettings.Equipped == false or Handle.Mesh ~= HandleMesh then return end
+	if input.UserInputType == Enum.UserInputType.Keyboard then
 		if input.KeyCode == Enum.KeyCode.R then
-			--Reload()
+			Reload()
 		end
 	elseif input.UserInputType == Enum.UserInputType.MouseButton1 then
-		ToolSettings.Firing = true
-		Tool.Enabled = true
-		mainFiring()
+		if ToolSettings.Reloading == false then
+			ToolSettings.Firing = true
+			mainFiring()
+		end
 	end
 end)
 
@@ -245,6 +257,7 @@ end)
 
 Tool.Equipped:connect(function(mouse) 
 	Character = Tool.Parent
+	Mouse = mouse
 	Player = Players:GetPlayerFromCharacter(Character)
 	msg = Player:FindFirstChild("AmmoHUD")
 	if msg == nil then
@@ -254,17 +267,6 @@ Tool.Equipped:connect(function(mouse)
 	onAmmoChanged()
 	ToolSettings.Equipped = true
 	Tool.Enabled = true
-	
-	mouse.Button1Down:connect(function()
-		print("firing!!!")
-		--ToolSettings.Firing = true
-		--mainFiring()
-	end)
-	
-	mouse.Button1Up:connect(function()
-		--ToolSettings.Firing = false
-		--wait(.5)
-	end)
 end)
 
 Tool.Unequipped:connect(function()  
