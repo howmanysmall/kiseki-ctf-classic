@@ -22,3 +22,6 @@ A rescripted version of Clockwork and Conix's game "Kiseki". This is the source 
 * Modifying more legacy coding.
 * Adding a Jetboots system.
 * Adding a class UI system.
+* Making the UI system a lot better than it is at the moment.
+
+*Copyright (c) 2016-2017 shloid*
