@@ -12,6 +12,7 @@ local Services = {
 
 local RbxUtil = require(Services.Lighting:FindFirstChild("RbxUtility"))
 local Create = RbxUtil.Create
+local RbxAssetId = "rbxassetid://"
 
 local Gv2 = {
 	debug = false,
@@ -120,70 +121,70 @@ local Gv2 = {
 	},
 	
 	shirtGrid = {
-		["http://www.roblox.com/asset/?id=2729205"]  = "Phantom",
-		["http://www.roblox.com/asset/?id=2729207"]  = "Barbarian",
-		["http://www.roblox.com/asset/?id=2729212"]  = "Wellwisher",
-		["http://www.roblox.com/asset/?id=2729217"]  = "Tinkerer",
-		["http://www.roblox.com/asset/?id=2749266"]  = "Faerie Knight",
-		["http://www.roblox.com/asset/?id=2749268"]  = "Butcher",
-		["http://www.roblox.com/asset/?id=2749263"]  = "Machinist",
-		["http://www.roblox.com/asset/?id=2801405"]  = "Exorcist",
-		["http://www.roblox.com/asset/?id=2801397"]  = "Apprentice",
-		["http://www.roblox.com/asset/?id=2902054"]  = "Witch Doctor",
-		["http://www.roblox.com/asset/?id=4843677"]  = "Sensation Man",
-		["http://www.roblox.com/asset/?id=6334561"]  = "Vampire",
-		["http://www.roblox.com/asset/?id=6334559"]  = "Shinobi",
-		["http://www.roblox.com/asset/?id=13837268"] = "Sensation Man 2",
+		[RbxAssetId.."2729205"]  = "Phantom",
+		[RbxAssetId.."2729207"]  = "Barbarian",
+		[RbxAssetId.."2729212"]  = "Wellwisher",
+		[RbxAssetId.."2729217"]  = "Tinkerer",
+		[RbxAssetId.."749266"]  = "Faerie Knight",
+		[RbxAssetId.."2749268"]  = "Butcher",
+		[RbxAssetId.."2749263"]  = "Machinist",
+		[RbxAssetId.."2801405"]  = "Exorcist",
+		[RbxAssetId.."2801397"]  = "Apprentice",
+		[RbxAssetId.."2902054"]  = "Witch Doctor",
+		[RbxAssetId.."4843677"]  = "Sensation Man",
+		[RbxAssetId.."6334561"]  = "Vampire",
+		[RbxAssetId.."6334559"]  = "Shinobi",
+		[RbxAssetId.."13837268"] = "Sensation Man 2",
 	},
 	
 	charGrid = {
 		-- offensive classes: butcher, barbarian, faerie knight, apprentice, phantom
 		-- defensive classes: vampire, machinist, sensational man, witch doctor
 		-- supportive classes: wellwisher, tinkerer, shinobi, exorcist
-		["Phantom"]           = "http://www.roblox.com/asset/?id=2729205", -- 1, defensive #2
-		["Barbarian"]         = "http://www.roblox.com/asset/?id=2729207", -- 2, offensive #2
-		["Wellwisher"]        = "http://www.roblox.com/asset/?id=2729212", -- 3, supportive #1
-		["Tinkerer"]          = "http://www.roblox.com/asset/?id=2729217",-- 4, defensive #1
-		["Faerie Knight"]     = "http://www.roblox.com/asset/?id=2749266", -- 5, offensive #3
-		["Butcher"]           = "http://www.roblox.com/asset/?id=2749268", -- 6, offensive #1
-		["Machinist"]         = "http://www.roblox.com/asset/?id=2749263", -- 7, defensive #1
-		["Exorcist"]          = "http://www.roblox.com/asset/?id=2801405", -- 8, supportive #2
-		["Apprentice"]        = "http://www.roblox.com/asset/?id=2801397", -- 9, 
-		["Witch Doctor"]      = "http://www.roblox.com/asset/?id=2902054", -- 10
-		["Sensational Man"]   = "http://www.roblox.com/asset/?id=4843677", -- 11
-		["Vampire"]           = "http://www.roblox.com/asset/?id=6334561", -- 12
-		["Shinobi"]           = "http://www.roblox.com/asset/?id=6334559", -- 13
-		["Sensational Man 2"] = "http://www.roblox.com/asset/?id=13837268", -- (still 12)
+		["Phantom"]           = RbxAssetId.."2729205", 
+		["Barbarian"]         = RbxAssetId.."2729207", 
+		["Wellwisher"]        = RbxAssetId.."2729212", 
+		["Tinkerer"]          = RbxAssetId.."2729217",
+		["Faerie Knight"]     = RbxAssetId.."2749266",
+		["Butcher"]           = RbxAssetId.."2749268", 
+		["Machinist"]         = RbxAssetId.."2749263", 
+		["Exorcist"]          = RbxAssetId.."2801405", 
+		["Apprentice"]        = RbxAssetId.."2801397", 
+		["Witch Doctor"]      = RbxAssetId.."2902054", 
+		["Sensational Man"]   = RbxAssetId.."4843677", 
+		["Vampire"]           = RbxAssetId.."6334561",
+		["Shinobi"]           = RbxAssetId.."6334559",
+		["Sensational Man 2"] = RbxAssetId.."13837268",
 	},
 	
 	pantsGrid = {
-		["http://www.roblox.com/asset/?id=3894762"] = "Adamant",
-		["http://www.roblox.com/asset/?id=3894764"] = "Affable", 
-		["http://www.roblox.com/asset/?id=3894767"] = "Bashful",  
-		["http://www.roblox.com/asset/?id=3894769"] = "Bold",  
-		["http://www.roblox.com/asset/?id=3894773"] = "Brave",  
-		["http://www.roblox.com/asset/?id=3894771"] = "Bulky",  
-		["http://www.roblox.com/asset/?id=3894776"] = "Calm",  
-		["http://www.roblox.com/asset/?id=3894778"] = "Careful",  
-		["http://www.roblox.com/asset/?id=3894781"] = "Docile",  
-		["http://www.roblox.com/asset/?id=3894783"] = "Gentle",  
-		["http://www.roblox.com/asset/?id=3894786"] = "Hardy",  
-		["http://www.roblox.com/asset/?id=3894788"] = "Hasty",  
-		["http://www.roblox.com/asset/?id=3894790"] = "Impish",  
-		["http://www.roblox.com/asset/?id=3894793"] = "Jolly",  
-		["http://www.roblox.com/asset/?id=3894795"] = "Lax",  
-		["http://www.roblox.com/asset/?id=3894797"] = "Lonely",  
-		["http://www.roblox.com/asset/?id=3894801"] = "Mild",  
-		["http://www.roblox.com/asset/?id=3894804"] = "Modest",  
-		["http://www.roblox.com/asset/?id=3894808"] = "Naive",  
-		["http://www.roblox.com/asset/?id=3894806"] = "Naughty",  
-		["http://www.roblox.com/asset/?id=3894810"] = "Quiet",  
-		["http://www.roblox.com/asset/?id=3894812"] = "Quirky",  
-		["http://www.roblox.com/asset/?id=3894814"] = "Rash",  
-		["http://www.roblox.com/asset/?id=3894816"] = "Relaxed",  
-		["http://www.roblox.com/asset/?id=3894820"] = "Sassy",  
-		["http://www.roblox.com/asset/?id=3894822"] = "Serious",  
-		["http://www.roblox.com/asset/?id=3894824"] = "Timid",  
+		[RbxAssetId.."3894762"] = "Adamant",
+		[RbxAssetId.."3894764"] = "Affable", 
+		[RbxAssetId.."3894767"] = "Bashful",  
+		[RbxAssetId.."3894769"] = "Bold",  
+		[RbxAssetId.."3894773"] = "Brave",  
+		[RbxAssetId.."3894771"] = "Bulky",  
+		[RbxAssetId.."3894776"] = "Calm",  
+		[RbxAssetId.."3894778"] = "Careful",  
+		[RbxAssetId.."3894781"] = "Docile",  
+		[RbxAssetId.."3894783"] = "Gentle",  
+		[RbxAssetId.."894786"] = "Hardy",  
+		[RbxAssetId.."3894788"] = "Hasty",  
+		[RbxAssetId.."3894790"] = "Impish",  
+		[RbxAssetId.."3894793"] = "Jolly",  
+		[RbxAssetId.."3894795"] = "Lax",  
+		[RbxAssetId.."3894797"] = "Lonely",  
+		[RbxAssetId.."3894801"] = "Mild",  
+		[RbxAssetId.."3894804"] = "Modest",  
+		[RbxAssetId.."3894808"] = "Naive",  
+		[RbxAssetId.."3894806"] = "Naughty",  
+		[RbxAssetId.."3894810"] = "Quiet",  
+		[RbxAssetId.."3894812"] = "Quirky",  
+		[RbxAssetId.."3894814"] = "Rash",  
+		[RbxAssetId.."3894816"] = "Relaxed",  
+		[RbxAssetId.."3894820"] = "Sassy",  
+		[RbxAssetId.."3894822"] = "Serious",  
+		[RbxAssetId.."894824"] = "Timid",  
 	},
 }
 
@@ -242,52 +243,6 @@ function Gv2:LoadAssets(AssetList)
 	for _, AssetId in pairs(AssetList) do
 		Services.ContentProvider:Preload("rbxassetid://" .. AssetId)
 	end
-end
-
-function Gv2:DamageBillboard(pos,text,rate,time,color)
-	local pos = pos or Vector3.new(0,0,0)
-	local time = time or 2
-	local color = color or Color3.new(1,0,0)
-	local pos = pos + Vector3.new(0,5,0)
-	
-	local ep = Create("Part") {
-		Name = "Effect",
-		Size = Vector3.new(1,1,1),
-		TopSurface = "Smooth",
-		BottomSurface = "Smooth",
-		CFrame = CFrame.new(pos),
-		Anchored = true,
-		CanCollide = false,
-		Transparency = 1
-	}
-	
-	local bb = Create("BillboardGui") {
-		Size = UDim2.new(3,0,3,0),
-		Adornee = ep,
-		Parent = ep,
-	}
-	
-	local tl = Create("TextLabel") {
-		BackgroundTransparency = 1,
-		Size = UDim2.new(1,0,1,0),
-		Text = text,
-		TextColor3 = color,
-		TextScaled = true,
-		Font = "Arial",
-		Parent = bb,
-	}
-	Services.Debris:AddItem(ep,time+.1)
-	ep.Parent = workspace
-	delay(0,function()
-		local frames = time / rate
-		for frame = 1,frames do
-			wait(rate)
-			local percent = frame/frames
-			ep.CFrame = CFrame.new(pos) + Vector3.new(0,5*percent,0)
-			tl.TextTransparency = percent
-		end
-		ep:remove()
-	end)
 end
 
 function Gv2:FindFirstEnemy(name, team_color)
