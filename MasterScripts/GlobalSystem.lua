@@ -10,7 +10,8 @@ local Services = {
 	R_Storage = game:GetService("ReplicatedStorage"),	
 }
 
-local _Gv2 = require(Services.R_Storage:FindFirstChild("_Gv2"))
+local GVarModule = Services.R_Storage:WaitForChild("_Gv2")
+local _Gv2 = require(GVarModule)
 
 -- Variables
 local implementedWeapons = {}
@@ -22,10 +23,6 @@ local shirtGrid,pantsGrid = _Gv2.shirtGrid,_Gv2.pantsGrid
 ----------------------------------------------------------------------------------------------------------------------------------------
 
 function objContains(needle, haystack)
-	-- The needle repesents the object that needs to be found within the Haystack.
-	-- The haystack represents the parent where the needle might be at.
-	-- If the needle is founded, then it will return true.
-	-- Anything else will return false.
 	for i,v in ipairs(haystack) do
 		if string.lower(v) == string.lower(needle) then
 			return true
@@ -54,6 +51,7 @@ end
 Services.Players.PlayerAdded:connect(function(newPlayer)
 	local statusMsg = Instance.new("Hint")
 	statusMsg.Name = "Status"
+	statusMsg.Text = "Nothing."
 	statusMsg.Parent = newPlayer
 
 	local ammoHud = Instance.new("Message")
@@ -83,11 +81,11 @@ function onPlayerRespawn(property,player)
 			class = "Butcher" -- this is just a default debug class because fuck it
 		else
 			for i = 1, 10, 1 do
-				wait(.25)
+				wait(.5)
 				if player.Character:FindFirstChild("Shirt Graphic") then print("[Server] Found Shirt Graphic!") break end
 			end
 
-			if not pChar:FindFirstChild("Shirt Graphic") then
+			if not player.Character:FindFirstChild("Shirt Graphic") then
 				class = Services.Lighting.ClassContainer:GetChildren()
 				class = class[math.random(1,#class)].Name
 				local pClassIdentifier = Instance.new("ShirtGraphic",pChar)
@@ -116,7 +114,7 @@ function onPlayerRespawn(property,player)
 
 		if class == nil then
 			class = Services.Lighting.ClassContainer:GetChildren()
-			class = class[math.random(1,#class)].Name
+			class = class[math.random(1,13)].Name
 		end
 		
 		local pClassIdentifier = Instance.new("ShirtGraphic",pChar)
@@ -126,6 +124,9 @@ function onPlayerRespawn(property,player)
 		local guns = Services.Lighting.WeaponContainer:GetChildren()
 		
 		if _Gv2.debug == true then
+			for i,v in pairs(Services.Lighting.DebugWeapons:GetChildren()) do
+				v:Clone().Parent = player.Backpack
+			end
 			for i,v in ipairs(guns) do
 				_Gv2:GiveGun(player,v)
 			end
