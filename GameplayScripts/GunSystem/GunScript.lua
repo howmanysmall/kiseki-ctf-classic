@@ -1,5 +1,5 @@
 -------------------------------------------------------------------------------------------------------------------------------------------
--- Kiseki CTF: Classic Edition Gun System
+-- Gun System
 -- Scripted by Clockwork, Modified by shloid
 -------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -77,7 +77,10 @@ function fire(v, playSound)
 		creator_tag.Value = Player
 		
 		new_script.Parent = missile
-		new_script.Disabled = false
+		spawn(function()
+			wait(.3)
+			new_script.Disabled = false
+		end)
 		missile.Parent = workspace
 	else
 		local ray = Ray.new(Handle.CFrame.p, (Mouse.Hit.p - Handle.CFrame.p).unit * 300)
@@ -123,7 +126,7 @@ function Reload()
 
 	if Tool.Name ~= "Spas-12" then
 		if Tool.Name == "M79" or Tool.Name == "LAW" then
-			-- do nothing
+			wait(SettingsModule.ReloadTime)
 		else
 			wait(Sounds.Reload.TimeLength)
 		end
@@ -164,11 +167,9 @@ function mainFiring(name, inputState, inputObject)
 		local rounds = 1 -- for rounds
 		local chain = 0 -- for recoil
 		local fired = false
-		if Character:FindFirstChild("Class") then
-			if Character.Class.Value == "Sensation Man" and Character.Torso:FindFirstChild("123") then
-				Character.Torso:FindFirstChild("123"):Play()
-			end	
-		end
+		if Class.Value == "Sensational Man" and Torso:FindFirstChild("123") then
+			Torso:FindFirstChild("123"):Play()
+		end	
 		
 		wait(SettingsModule.StartupTime)
 		
@@ -206,17 +207,16 @@ function mainFiring(name, inputState, inputObject)
 
 			-- recoil cap
 			if chain < 10 then chain = chain + 1 end
-
+			
 			ToolSettings.Clip = ToolSettings.Clip - 1
 			onAmmoChanged()
 			print("[Server]",Tool.Name,"'s Clip:",ToolSettings.Clip)
 			Tool.Enabled = false
-			
+			wait(SettingsModule.FireRate)
 			if ToolSettings.Clip <= 0 then
 				ToolSettings.Reloading = true
 				Reload()
 			end
-			wait(SettingsModule.FireRate)
 			Tool.Enabled = true
 			if Tool.Name == "Socom" then
 				ToolSettings.Firing = false
@@ -257,13 +257,18 @@ end)
 
 Tool.Equipped:connect(function(mouse) 
 	Character = Tool.Parent
-	Mouse = mouse
+	Torso = Character:FindFirstChild("Torso")
 	Player = Players:GetPlayerFromCharacter(Character)
+	Class = Player:FindFirstChild("Class")
+	Mouse = mouse
 	msg = Player:FindFirstChild("AmmoHUD")
 	if msg == nil then
 		msg = Instance.new("Message",Player)
 		msg.Name = "AmmoHUD"
 	end
+	if Player:FindFirstChild("AmmoHudControl") == nil then repeat wait() until Player:FindFirstChild("AmmoHudControl") ~= nil end
+	ammoHudChanger = Player:FindFirstChild("AmmoHudControl")
+	ammoHudChanger:Fire(true)
 	onAmmoChanged()
 	ToolSettings.Equipped = true
 	Tool.Enabled = true
@@ -273,6 +278,7 @@ Tool.Unequipped:connect(function()
 	ToolSettings.Firing = false
 	ToolSettings.Equipped = false
 	ToolSettings.Reloading = false
+	ammoHudChanger:Fire(false)
 	
 	for i, v in pairs(Handle:GetChildren()) do
 		if v:IsA("Sound") then
