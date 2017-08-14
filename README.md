@@ -10,6 +10,7 @@ A rescripted version of Clockwork and Conix's game "Kiseki". This is the source 
 * Ice Shards, Soul Bolt, Bash, Pacifism, T-Storm, and Monsoon have been updated to become a lot better.
 * Personality system has been temporary removed til next update (which will probably be v1.2b).
 * Socom and Barrett stats have been updated.
+* Faerie Knight can now jump way higher than before! Which means that Jetboots do not work on Faerie Knight.
 
 ## Update Log [v1.1]
 * Meat Hook is now functional!
@@ -26,8 +27,10 @@ A rescripted version of Clockwork and Conix's game "Kiseki". This is the source 
 
 ## Future Changes (for next update)
 * Abscond, Disarm, Sentry Gun, Bite, Feeding Frenzy, Duress, and Defile will be either reworked into something better, modified, or fixed.
-* A ragdoll system will be added too.
+* Add a Ragdoll system *(so Corpse Explosion will be easier to use)*.
 * Add a new Personality system.
+* Update all the maps to be a bit more "modern".
+* Two new classes *(maybe? probably not)*.
 * Modifying more legacy coding.
 
 *Copyright (c) 2016-2017 shloid*
