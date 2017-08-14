@@ -1,236 +1,216 @@
 ----------------------------------------------------------------------------------------------------------------------------------------
--- Global System Script for Kiseki CTF: Classic Edition
--- Created by Conix and Clockwork, Modified by shloid (da man!!!)
+-- Global System
+-- Scripted by shloid
+-- just to reitterate what i've said, I hate the legacy coding from Kiseki. 
+-- it's very messy and ugly. so I had to rescript the GlobalSystem for
+-- the "Shinobi Update".
 ----------------------------------------------------------------------------------------------------------------------------------------
 
 -- Services
-local Services = {
-	Players = game:GetService("Players"),
-	Lighting = game:GetService("Lighting"),
-	R_Storage = game:GetService("ReplicatedStorage"),	
-}
+local Rep = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local Lighting = game:GetService("Lighting")
 
-local GVarModule = Services.R_Storage:WaitForChild("_Gv2")
-local _Gv2 = require(GVarModule)
 
 -- Variables
+local _Gv2 = require(Rep:FindFirstChild("_Gv2"))
+
+local ClassContainer = Lighting:WaitForChild("ClassContainer")
+local WeaponContainer = Lighting:WaitForChild("WeaponContainer")
+local DebugWeapons = Lighting:WaitForChild("DebugWeapons")
+local PersonScript = Lighting:WaitForChild("PersonScript")
+
+local guns = WeaponContainer:GetChildren()
+local container = ClassContainer:GetChildren()
 local implementedWeapons = {}
-local class_weapons = {}
-local shirtGrid,pantsGrid = _Gv2.shirtGrid,_Gv2.pantsGrid
+local classes = {
+	["Butcher"] = true,
+	["Barbarian"] = true,
+	["Faerie Knight"] = true,
+	["Apprentice"] = true,
+	["Phantom"] = true,
+	
+	["Machinist"] = true,
+	["Vampire"] = true,
+	["Sensational Man"] = true,
+	["Witch Doctor"] = true,
+	
+	["Wellwisher"] = true,
+	["Tinkerer"] = true,
+	["Shinobi"] = true,
+	[""] = true,	
+}
 
 ----------------------------------------------------------------------------------------------------------------------------------------
 -- Functions / Methods
 ----------------------------------------------------------------------------------------------------------------------------------------
 
-function objContains(needle, haystack)
-	for i,v in ipairs(haystack) do
-		if string.lower(v) == string.lower(needle) then
-			return true
-		end
-	end
-	return false
-end
-
 -- a list of implemented weapons
-for i,v in ipairs(Services.Lighting.WeaponContainer:children()) do
+for i,v in pairs(WeaponContainer:GetChildren()) do
 	table.insert(implementedWeapons, v.Name)
 end
 
 print("[Server] Implemented weapons: " .. table.concat(implementedWeapons, ", "))
 
--- remove weapons that aren't implemented
-for class,weapons in pairs(_Gv2.weapon_grid) do
-	for i,name in ipairs(weapons) do
-		if objContains(name,implementedWeapons) then
-			table.insert(class_weapons, name)
+function changeAppearance(play,char)
+	for _,v in pairs(char:GetChildren()) do
+		if v:IsA("Part") then
+			v.BrickColor = BrickColor.new("Black")
+			if v.Name == "Head" or v.Name == "Torso" then
+				v.BrickColor = play.TeamColor
+			end
+		elseif v:IsA("Shirt") or v:IsA("Hat") or v:IsA("Accessory") then
+				v:Destroy()
+			elseif v:IsA("Pants") then
+			if _Gv2.pantsGrid[v.PantsTemplate] == nil then
+				v:Destroy()
+			end
 		end
 	end
-	_Gv2.weapon_grid[class] = class_weapons
 end
 
-Services.Players.PlayerAdded:connect(function(newPlayer)
-	local statusMsg = Instance.new("Hint")
-	statusMsg.Name = "Status"
-	statusMsg.Text = "Nothing."
-	statusMsg.Parent = newPlayer
-
-	local ammoHud = Instance.new("Message")
-	ammoHud.Name = "AmmoHUD"
-	ammoHud.Text = "0/0"
-	ammoHud.Parent = newPlayer
-
-	newPlayer.Changed:connect(function(property) onPlayerRespawn(property, newPlayer) end)
-end)
+function setupClass(class,play,char,hum,tors,back,cvalue)
+	if (class or play or char or hum or tors or back) == nil then return end
+	if _Gv2.charGrid[class] == nil and class ~= "None" then return end
+	
+	-- variables
+	local selClass = class
+	if class == "None" then 
+		local mdr = math.random(1,13)
+		local selectedC = container[mdr].Name
+		selClass = selectedC
+		cvalue.Value = selClass
+	end
+	
+	local cShirt = _Gv2.charGrid[selClass]
+	local cWeapons = _Gv2.weaponGrid[selClass]
+	local cContainer = ClassContainer:FindFirstChild(selClass)
+	if cContainer == nil then return end
+	
+	if _Gv2.debug == false then
+		--print("[GlobalSystem] Primary weapona for "..class.." : "..table.concat(cWeapons["SpawnWeapons"],", "))
+		--print("[GlobalSystem] Available weapons for "..class.." : "..table.concat(cWeapons["Pool"], ", "))
+	
+		for i,v in pairs(WeaponContainer:GetChildren()) do
+			if cWeapons["SpawnWeapons"][v.Name] ~= nil  then
+				print("[GlobalSystem] Giving "..play.Name.." "..v.Name..".")
+				_Gv2:GiveGun(play,v)
+			end
+		end
+	else
+		for i,v in pairs(DebugWeapons:GetChildren()) do
+			v:Clone().Parent = back
+		end
+		for i,v in pairs(WeaponContainer:GetChildren()) do
+			_Gv2:GiveGun(play,v)
+		end
+	end
+	
+	for i,v in ipairs(cContainer:GetChildren()) do
+		if v:IsA("HopperBin") or v:IsA("Tool") then
+			v:Clone().Parent = back
+		elseif v.className == "Sound" then
+			v:Clone().Parent = tors
+		else
+			v:Clone().Parent = char
+		end
+	end
+	
+	local newPScript = PersonScript:Clone()
+	newPScript.Parent = char
+	newPScript.Disabled = false
+	
+	if cContainer:FindFirstChild("WalkSpeed") then
+		hum.WalkSpeed = cContainer:WaitForChild("WalkSpeed").Value
+	end
+	print("[GlobalSystem] Successfully implimented "..play.Name.."'s class: "..class)
+end
 
 function onPlayerRespawn(property,player)
 	while player.Character == nil do wait(1) end
 	if property == "Character" and player.Character ~= nil then
-		-- Variables
-		local pChar = player.Character
-		local pHumanoid = pChar:WaitForChild("Humanoid")
-		local pBackpack = player:WaitForChild("Backpack")
-		local pTorso = pChar:WaitForChild("Torso")
+		print("[GlobalSystem] Setting up player.")
 		
+		-- Character
+		local pChar = player.Character
+		local pClass = player:FindFirstChild("Class") or nil
+		local pTorso = pChar:WaitForChild("Torso")
+		local pBackpack = player:WaitForChild("Backpack")
+		local pHumanoid = pChar:WaitForChild("Humanoid")
+		
+		-- Instances
 		local buffs = Instance.new("Model",pChar)
 		buffs.Name = "Buffs"
-
-		local class = nil
 		
-		-- Functions / Methods
+		-- Master Function
+		changeAppearance(player,pChar)
 		if _Gv2.debug == true then
-			class = "Butcher" -- this is just a default debug class because fuck it
+			pClass = Instance.new("StringValue",player)
+			pClass.Name = "Class"
+			pClass.Value = "Shinobi" -- this is just a default debug class because fuck it
+			setupClass(pClass.Value,player,pChar,pHumanoid,pTorso,pBackpack,pClass)
 		else
-			for i = 1, 10, 1 do
-				wait(.5)
-				if player.Character:FindFirstChild("Shirt Graphic") then print("[Server] Found Shirt Graphic!") break end
-			end
-
-			if not player.Character:FindFirstChild("Shirt Graphic") then
-				class = Services.Lighting.ClassContainer:GetChildren()
-				class = class[math.random(1,#class)].Name
-				local pClassIdentifier = Instance.new("ShirtGraphic",pChar)
-				--pClassIdentifier.Graphic = shirtGrid[class]
+			if pClass ~= nil then
+				setupClass(pClass.Value,player,pChar,pHumanoid,pTorso,pBackpack,pClass)
 			else
-				if shirtGrid[pChar["Shirt Graphic"].Graphic] == nil then  
-					print("[Server] ..but sadly it's not the Shirt Graphic we're looking for :<")
-				else
-					print("Shirt:", player.Character["Shirt Graphic"].Graphic)
-					class = shirtGrid[player.Character["Shirt Graphic"].Graphic]
-				end
-			end
-
-			if class == "Sensation Man" then
-				print("[Server] Sensation Shirt Detected")
-				if not objContains(player.Name, _Gv2.sensational_man) then
-					print("[Server] This boy is not sensational enough!")
-					class = nil
-				end
+				pClass = Instance.new("StringValue",player)
+				pClass.Name = "Class"
+				pClass.Value = "None"
+				setupClass(pClass.Value,player,pChar,pHumanoid,pTorso,pBackpack,pClass)
 			end
 			
-			if class == "Sensation Man 2" then
-				class = "Sensation Man"
-			end
-		end
-
-		if class == nil then
-			class = Services.Lighting.ClassContainer:GetChildren()
-			class = class[math.random(1,13)].Name
-		end
-		
-		local pClassIdentifier = Instance.new("ShirtGraphic",pChar)
-		pClassIdentifier.Graphic = _Gv2.charGrid[class]
-		
-		class = Services.Lighting.ClassContainer:FindFirstChild(class)
-		local guns = Services.Lighting.WeaponContainer:GetChildren()
-		
-		if _Gv2.debug == true then
-			for i,v in pairs(Services.Lighting.DebugWeapons:GetChildren()) do
-				v:Clone().Parent = player.Backpack
-			end
-			for i,v in ipairs(guns) do
-				_Gv2:GiveGun(player,v)
-			end
-		else
-			local class_weapons = _Gv2.weapon_grid[class.Name]
-			if class_weapons then
-				print("[Server] Primary weapon for", class.Name, ":",class_weapons[1])
-				print("[Server] Available weapons for", class.Name, ":", table.concat(class_weapons, ", "))
-				_Gv2:GiveGun(player, Services.Lighting.WeaponContainer:FindFirstChild(class_weapons[1]))
-				if #class_weapons > 1 then
-					local weapon_name = class_weapons[math.random(2, #class_weapons)]
-					_Gv2:GiveGun(player, Services.Lighting.WeaponContainer:findFirstChild(weapon_name))
-				end
-			else
-				print("[Server] No weapons found for class:", class.Name)
-			end
-		end
-
-		local classTag = Instance.new("StringValue",pChar)
-		classTag.Name = "Class"
-		classTag.Value = class.Name
-
-		if not class:FindFirstChild("PersonScript") then
-			Services.Lighting.PersonScript:Clone().Parent = pChar
-		end
-
-		for i,v in ipairs(class:GetChildren()) do
-			if v:IsA("HopperBin") or v:IsA("Tool") then
-				v:Clone().Parent = pBackpack
-			elseif v.className == "Sound" then
-				v:Clone().Parent = pTorso
-			else
-				v:Clone().Parent = pChar
-			end
-			wait()
-		end
-
-		-- Changing player's apperance.
-		for _,v in pairs(pChar:GetChildren()) do
-			if v:IsA("Part") then
-				v.BrickColor = BrickColor.new("Black")
-				if v.Name == "Head" or v.Name == "Torso" then
-					v.BrickColor = player.TeamColor
-				end
-			elseif v:IsA("Shirt") or v:IsA("Hat") or v:IsA("Accessory") then
-				v:Destroy()
-			elseif v:IsA("Pants") then
-				if pantsGrid[v.PantsTemplate] == nil then
-					v:Destroy()
-				end
-			end
-		end
-
-		-- Changing Player's Walkspeed.
-		if class:FindFirstChild("WalkSpeed") then
-			pChar.Humanoid.WalkSpeed = class.WalkSpeed.Value
-		end
-
-		wait(.1)
-		
-		-- Applying personality.
-		if player.Character:FindFirstChild("Pants") then
-			if pantsGrid[pChar.Pants.PantsTemplate] == nil then return end
-			
-			print("[Server] Pants:", pChar.Pants.PantsTemplate)
-			local personality = pantsGrid[pChar.Pants.PantsTemplate]
-			print("[Server] Personality: ", personality)
-			
-			if _Gv2.personality_grid[personality] then
-				local properties = _Gv2.personality_grid[personality]
-				
-				local pArmorMod = pChar:FindFirstChild("ArmorMod")
-				if pArmorMod == nil then repeat wait() until pChar:FindFirstChild("ArmorMod") end
-				pArmorMod = pChar:FindFirstChild("ArmorMod")
-				
-				local pDamageMod = pChar:FindFirstChild("DamageMod")
-				if pDamageMod == nil then repeat wait() until pChar:FindFirstChild("DamageMod") end
-				pDamageMod = pChar:FindFirstChild("DamageMod")
-				
+			-------------------------------------------------------------------------------------
+			--[[
+			if pChar:FindFirstChild("Pants") then
+				local pPants = pChar:FindFirstChild("Pants")
+				if _Gv2.pantsGrid[pPants.PantsTemplate] == nil then return end
+					
+				local personality = _Gv2.pantsGrid[pPants.PantsTemplate]
+				print("[Server] Personality: ", personality)
+				local properties = _Gv2.personalityGrid[personality]
+				local pArmorMod = (pChar:FindFirstChild("ArmorMod") or nil)
+				local pDamageMod = (pChar:FindFirstChild("DamageMod") or nil)
+				if (pArmorMod or pDamageMod) == nil then return end
+					
 				pArmorMod.Value = pArmorMod.Value * (1 + properties[1] / 100.0)
 				pDamageMod.Value = pDamageMod.Value * (1 + properties[2] / 100.0)
 				pHumanoid.WalkSpeed = pHumanoid.WalkSpeed * (1 + properties[3] / 100.0)
-
+					
 				local bForce = Instance.new("BodyForce") 
 				local gravityForce = 9.8 * 20 * 14 
 				bForce.force = Vector3.new(0, properties[4] / 100.0 * gravityForce * .6, 0) 
-				if class.Name == "Faerie Knight" then 
+				
+				if pClass.Value == "Faerie Knight" then 
 					local cap = .4 
 					if bForce.force.y > gravityForce * cap then  
 						bForce.force = Vector3.new(0, gravityForce * cap, 0) 
 					end 
 				end 
+				
 				if bForce.force.y ~= 0 then
 					bForce.Parent = pTorso
 				else
 					bForce:Destroy()
 				end
 			end
+			]]--
+			-------------------------------------------------------------------------------------
 		end
 	end
 end
 
-workspace.ChildAdded:connect(function(child)
-	if child.className == "Tool" or child.className == "Hat" then
-		child:Destroy()
-	end
+Players.PlayerAdded:connect(function(player)
+	local statusMsg = Instance.new("Hint",player)
+	statusMsg.Name = "Status"
+	statusMsg.Text = "Nothing."
+
+	local ammoHud = Instance.new("Message",player)
+	ammoHud.Name = "AmmoHUD"
+	ammoHud.Text = ""
+	
+	local classValue = Instance.new("StringValue",player)
+	classValue.Name = "Class"
+	classValue.Value = "None"
+
+	player.Changed:connect(function(property) onPlayerRespawn(property, player) end)
 end)
