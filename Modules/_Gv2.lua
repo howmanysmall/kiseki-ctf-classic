@@ -26,23 +26,216 @@ local Gv2 = {
 		["Morphling"] = true,
 	},
 	
-	weapon_grid = {
-		["Barbarian"] = {"Spas-12", "HK5", "Deagles", "AK-74", "Socom", "M79", "Throwing Knives"},
-		["Phantom"] = {"Ruger", "HK5",  "Spas-12", "Deagles", "Steyr AUG", "M-15", "Socom", "Throwing Knives"},
-		["Tinkerer"] = {"AK-74", "HK5",  "Spas-12", "Deagles", "Steyr AUG", "Ruger", "M-15", "Socom", "M79", "Barrett", "LAW"},
-		["Wellwisher"] = {"Steyr AUG",  "AK-74", "Ruger", "M-15", "Socom","Barrett", "LAW"},	
-		["Faerie Knight"] = {"Ruger", "Deagles", "Steyr AUG", "AK-74", "M-15", "Socom", "Barrett", "Throwing Knives"},
-		["Butcher"] = {"Chainsaw"},
-		["Machinist"] = {"AK-74", "HK5",  "Spas-12", "Deagles", "Steyr AUG", "Ruger", "M-15", "Socom", "M79", "Barrett", "LAW"},
-		["Exorcist"] = {"HK5",  "Spas-12", "Deagles", "Ruger", "M-15", "Socom", "Barrett", "Throwing Knives"},
-		["Apprentice"] = {"Steyr AUG", "HK5",  "Deagles", "AK-74", "M-15", "Socom", "M79"},
-		["Witch Doctor"] =  {"Steyr AUG", "AK-74", "Barrett", "Spas-12", "Ruger"},
-		["Sensation Man"] = {"Chainsaw", "LAW"},
-		["Shinobi"] = {"HK5"},
-		["Vampire"] = {"HK5", "Deagles", "M79", "Throwing Knives", "AK-74", "Spas-12", "Ruger"},
+	weaponGrid = {
+		--[[ 
+			SpawnWeapons - weapons that are given to the player when they spawn
+			Pool - weapons that are available to the class
+			
+			example:
+			["Barbarian"] = {
+				["SpawnWeapons"] = {
+					["Spas-12"] = true, 
+					["HK5"] = true,
+				},
+			 
+				["Pool"] = {
+					["Deagles"] = true, 
+					["AK-74"] = true, 
+					["Socom"] = true, 
+					["M79"] = true, 
+					["Throwing Knives"] = true,
+				}
+			},
+		]]--
+		["Barbarian"] = {
+			["SpawnWeapons"] = {
+				["Spas-12"] = true, 
+				["HK5"] = true,
+			},
+			 
+			["Pool"] = {
+				["Deagles"] = true, 
+				["AK-74"] = true, 
+				["Socom"] = true, 
+				["M79"] = true, 
+				["Throwing Knives"] = true,
+			}
+		},
+		
+		["Phantom"] = {
+			["SpawnWeapons"] = {
+				["Ruger"] = true, 
+				["HK5"] = true,  
+			},
+			
+			["Pool"] = {
+				["Spas-12"] = true, 
+				["Deagles"] = true,  
+				["Steyr AUG"] = true,  
+				["M-15"] = true, 
+				["Socom"] = true, 
+				["Throwing Knives"] = true, 
+			}
+		},
+		
+		["Tinkerer"] = {			
+			["SpawnWeapons"] = {
+				["AK-74"] = true,
+				["Socom"] = true,
+			},			
+			
+			["Pool"] = {
+				["Spas-12"] = true,  
+				["Deagles"] = true,  
+				["Steyr AUG"] = true,  
+				["Ruger"] = true, 
+				["M-15"] = true,   
+				["M79"] = true,   
+				["HK5"] = true,  
+				["Barrett"] = true,  
+				["LAW"] = true,
+			} 
+		},
+		
+		["Wellwisher"] = {
+			["SpawnWeapons"] = {
+				["Steyr AUG"] = true,  
+				["HK5"] = true, 
+			},
+			
+			
+			["Pool"] = {
+				["Socom"] = true, 
+				["AK-74"] = true,
+				["Ruger"] = true,
+				["M-15"] = true, 
+				["Barrett"] = true,
+			}  
+		},	
+		
+		["Faerie Knight"] = {
+			["SpawnWeapons"] = {
+				["Steyr AUG"] = true,
+				["Socom"] = true,
+			},		
+			
+			["Pool"] = {	
+				["Ruger"] = true, 
+				["Deagles"] = true, 
+				["AK-74"] = true,
+				["M-15"] = true, 
+				["Barrett"] = true,  
+				["Throwing Knives"] = true,
+			}
+		},
+		
+		["Butcher"] = {
+			["SpawnWeapons"] = {
+				["Chainsaw"] = true,
+			},
+			
+			["Pool"] = {}
+		},
+		
+		["Machinist"] = {
+			["SpawnWeapons"] = {
+				["AK-74"] = true,
+				["Spas-12"] = true,
+			},
+			
+			["Pool"] = {
+				["HK5"] = true,
+				["Deagles"] = true, 
+				["Steyr AUG"] = true,
+				["Ruger"] = true,
+				["M-15"] = true,
+				["Socom"] = true,  
+				["M79"] = true,
+				["Barrett"] = true,  
+				["LAW"] = true, 
+			}
+		},
+		
+		["Exorcist"] = {
+			["SpawnWeapons"] = {
+				["Barrett"] = true, 
+				["HK5"] = true, 
+			},
+			
+			["Pool"] = {
+				["Spas-12"] = true,
+				["Deagles"] = true, 
+				["Ruger"] = true,
+				["M-15"] = true,
+				["Socom"] = true,
+				["Throwing Knives"] = true,
+			}
+		},
+		
+		["Apprentice"] = {
+			["SpawnWeapons"] = {
+				["Steyr AUG"] = true,
+				["Socom"] = true,
+			},
+			
+
+			["Pool"] = {	
+				["HK5"] = true,
+				["Deagles"] = true, 
+				["AK-74"] = true,
+				["M-15"] = true,  
+				["M79"] = true,
+			}
+		},
+		
+		["Witch Doctor"] =  {
+			["SpawnWeapons"] = {
+				["Steyr AUG"] = true,
+				["Socom"] = true,
+			},
+			
+			["Pool"] = {
+				["AK-74"] = true,
+				["Barrett"] = true,  
+				["Spas-12"] = true,
+				["Ruger"] = true,
+			}
+		},
+		
+		["Sensational Man"] = {			
+			["SpawnWeapons"] = {
+				["Chainsaw"] = true,
+				["LAW"] = true, 
+			},
+			
+			["Pool"] = {}			
+		},
+		
+		["Shinobi"] = {
+			["SpawnWeapons"] = {
+				["HK5"] = true, 
+			},
+			
+			["Pool"] = {}
+		},
+		
+		["Vampire"] = {
+			["SpawnWeapons"] = {
+				["Ruger"] = true,
+				["HK5"] = true, 
+			},
+			
+			["Pool"] = {
+				["Deagles"] = true,   
+				["M79"] = true,
+				["Throwing Knives"] = true,
+				["AK-74"] = true,
+				["Spas-12"] = true,
+			}
+		},
 	},
 	
-	personality_grid = {
+	personalityGrid = {
 		["Adamant"] = {-10, 0, -10, 0},   
 		["Affable"] = {-10, -20, 10, 0},  
 		["Bashful"] = {-3, 3, 3, 3},
@@ -72,89 +265,23 @@ local Gv2 = {
 		["Timid"] = {15, 5, 0, 15},
 	},
 	
-	sensational_man = {
-		"clockwork", 
-		"conix", 
-		"Deathmask390",
-		"Noobertuber",
-		"Akhenderson",
-		"Drazil29",
-		"Armydude123",
-		"bob10110",
-		"Telamon",
-		"Ultracool234",
-		"Toasteh",
-		"Briguy9876",
-		"Blazinhusky",
-		"Kaicui",
-		"Player",
-		"Giik",
-		"Qu4ch",
-		"YUKI.N",
-		"Flamerider64",
-		"bob10110",
-		"Minish",
-		"OzJB",
-		"MetalYoshi",
-		"LuigiFan",
-		"HellMage501",
-		"Byndley",
-		"NintendoBoy",
-		"smashbi121",
-		"UmbrellaCorps",
-		"polobowz",
-		"MrWillyWonnka",
-		"frzntear",
-		"Intile",
-		"astrosimi",
-		"HoolyRocket",
-		"TheShotgun",
-		"JMud",
-		"Samacado",
-		"mmk6288",
-		"Darthnoob",
-		"Erith",
-		"gemerl20",
-		"mustyoshi",
-		"supermario444",
-		"shloid",
-	},
-	
-	shirtGrid = {
-		[RbxAssetId.."2729205"]  = "Phantom",
-		[RbxAssetId.."2729207"]  = "Barbarian",
-		[RbxAssetId.."2729212"]  = "Wellwisher",
-		[RbxAssetId.."2729217"]  = "Tinkerer",
-		[RbxAssetId.."749266"]  = "Faerie Knight",
-		[RbxAssetId.."2749268"]  = "Butcher",
-		[RbxAssetId.."2749263"]  = "Machinist",
-		[RbxAssetId.."2801405"]  = "Exorcist",
-		[RbxAssetId.."2801397"]  = "Apprentice",
-		[RbxAssetId.."2902054"]  = "Witch Doctor",
-		[RbxAssetId.."4843677"]  = "Sensation Man",
-		[RbxAssetId.."6334561"]  = "Vampire",
-		[RbxAssetId.."6334559"]  = "Shinobi",
-		[RbxAssetId.."13837268"] = "Sensation Man 2",
-	},
-	
 	charGrid = {
-		-- offensive classes: butcher, barbarian, faerie knight, apprentice, phantom
-		-- defensive classes: vampire, machinist, sensational man, witch doctor
-		-- supportive classes: wellwisher, tinkerer, shinobi, exorcist
-		["Phantom"]           = RbxAssetId.."2729205", 
-		["Barbarian"]         = RbxAssetId.."2729207", 
-		["Wellwisher"]        = RbxAssetId.."2729212", 
-		["Tinkerer"]          = RbxAssetId.."2729217",
-		["Faerie Knight"]     = RbxAssetId.."2749266",
-		["Butcher"]           = RbxAssetId.."2749268", 
-		["Machinist"]         = RbxAssetId.."2749263", 
-		["Exorcist"]          = RbxAssetId.."2801405", 
-		["Apprentice"]        = RbxAssetId.."2801397", 
-		["Witch Doctor"]      = RbxAssetId.."2902054", 
-		["Sensational Man"]   = RbxAssetId.."4843677", 
-		["Vampire"]           = RbxAssetId.."6334561",
-		["Shinobi"]           = RbxAssetId.."6334559",
-		["Sensational Man 2"] = RbxAssetId.."13837268",
+		-- offensive classes: butcher, barbarian, faerie knight, apprentice, pyromaniac
+		-- defensive classes: machinist, vampire, sensational man, witch doctor, golem
+		-- supportive classes: wellwisher, tinkerer, shinobi, exorcist, phantom
+		["Phantom"]         = RbxAssetId.."2729205", 
+		["Barbarian"]       = RbxAssetId.."2729207", 
+		["Wellwisher"]      = RbxAssetId.."2729212", 
+		["Tinkerer"]        = RbxAssetId.."2729217",
+		["Faerie Knight"]   = RbxAssetId.."2749266",
+		["Butcher"]         = RbxAssetId.."2749268", 
+		["Machinist"]       = RbxAssetId.."2749263", 
+		["Exorcist"]        = RbxAssetId.."2801405", 
+		["Apprentice"]      = RbxAssetId.."2801397", 
+		["Witch Doctor"]    = RbxAssetId.."2902054", 
+		["Sensational Man"] = RbxAssetId.."4843677", 
+		["Vampire"]         = RbxAssetId.."6334561",
+		["Shinobi"]         = RbxAssetId.."6334559",
 	},
 	
 	pantsGrid = {
@@ -238,10 +365,45 @@ local function DamageBillboard(pos,text,rate,time,color)
 	end)
 end
 
+function Gv2:GenerateLightning(pos,pos2,radius,numParts,model)
+	radius = radius or 0.2
+	numParts = numParts or 10
+	model = model or workspace
+	local lv = CFrame.new(pos,pos2).lookVector
+	local dist = (pos-pos2).magnitude
+	local dbp = dist/numParts
+	local last = pos
+	for i = 1,numParts do
+		local p = Instance.new("Part",model)
+		p.Size = Vector3.new(1,1,1)
+		p.CanCollide = false
+		p.Anchored = true
+		p.Material = Enum.Material.Neon
+		p.BrickColor = BrickColor.new("Bright yellow")
+		local x = math.random(-100,100)/100*dbp/2
+		local y = math.random(-100,100)/100*dbp/2
+		local p2 = CFrame.new(pos + lv * (i *dbp),pos2+lv)*CFrame.new(x,y,0)
+		local dist2 = (p2.p-last).magnitude
+		local mid = (p2.p+last)/2
+		local m = Instance.new("BlockMesh",p)
+		m.Scale = Vector3.new(radius,radius,dist2)
+		p.CFrame = CFrame.new(mid,p2.p)
+		last = p2.p
+		Services.Debris:AddItem(p,math.random(40,100)/1000)
+	end
+end
+
 function Gv2:LoadAssets(AssetList)
 	-- Takes an asset list and preloads it. Will not wait for them to load. 
 	for _, AssetId in pairs(AssetList) do
-		Services.ContentProvider:Preload("rbxassetid://" .. AssetId)
+		local succ = pcall(function()
+			Services.ContentProvider:Preload(RbxAssetId..AssetId)
+		end)
+		if succ then
+			print("[LoadAssets] Asset "..RbxAssetId..AssetId.." has been loaded successfully.")
+		else
+			print("[LoadAssets] Asset "..RbxAssetId..AssetId.." failed to load properly.")
+		end
 	end
 end
 
@@ -295,15 +457,22 @@ end
 function Gv2:DealDamage(source, target, damage, stun, ignoreDef)
 	if source and target and damage then
 		print("[Server] Source, Target, and Damage exist.")
-		if stun == nil then stun = true end
+		if stun == nil then stun = false end
 		if ignoreDef == nil then ignoreDef = false end
 		
 		local sourcePlayer = Services.Players:GetPlayerFromCharacter(source)
 		local targetPlayer = Services.Players:GetPlayerFromCharacter(target) or nil
 		print("[Server] Both players exist.")
-		if targetPlayer ~= nil then if sourcePlayer.TeamColor == targetPlayer.TeamColor then return end end
+		if targetPlayer ~= nil then 
+			if sourcePlayer.TeamColor == targetPlayer.TeamColor then 
+				return
+			end 
+		end
+		
+		
 		if target:FindFirstChild("ForceField") or source == target then print("[Server] Target might have a forcefield on or the source is the target.") return end
 		if source:FindFirstChild("Humanoid") == nil or target:FindFirstChild("Humanoid") == nil or source:FindFirstChild("Torso") == nil or target:FindFirstChild("Torso") == nil then return end
+		if target:FindFirstChild("StoneShield") then return end
 		
 		local sourceHum = source:FindFirstChild("Humanoid")
 		local targetHum = target:FindFirstChild("Humanoid")
@@ -315,8 +484,11 @@ function Gv2:DealDamage(source, target, damage, stun, ignoreDef)
 		
 		print("[Server] Unmodified Damage:", damage)
 		local newDamage = damage
-		local sourceClass = source:FindFirstChild("Class") or nil
-		local targetClass = target:FindFirstChild("Class") or nil
+		local sourceClass = sourcePlayer:FindFirstChild("Class") or nil
+		local targetClass = nil
+		if targetPlayer ~= nil then
+			targetClass = targetPlayer:FindFirstChild("Class")
+		end
 		Gv2:tagHumanoid(sourcePlayer,targetHum)
 		
 		if sourceClass ~= nil then
@@ -411,7 +583,7 @@ function Gv2:DealDamage(source, target, damage, stun, ignoreDef)
 		
 		if sourceClass ~= nil and source:FindFirstChild("Buffs") then
 			print("[Server] Source class and source buffs are not nil.")
-			local sourceClass = source:FindFirstChild("Class")
+			local sourceClass = sourcePlayer:FindFirstChild("Class")
 			local sourceBuffs = source:FindFirstChild("Buffs")
 			
 			if sourceClass.Value == "Vampire" then
