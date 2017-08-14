@@ -13,6 +13,7 @@ local Self = script.Parent
 local FlagHandle = Self:WaitForChild("Handle")
 local FlagStand = Self:WaitForChild("FlagStand")
 FlagHandle.Name = "FlagHandle"
+FlagStand.Material = Enum.Material.Neon
 local CaptureFlag = RepStorage:WaitForChild("CaptureFlag")
 local ReturnFlag = RepStorage:WaitForChild("ReturnFlag")
 
@@ -49,7 +50,7 @@ function destroyFlag(targ)
 end
 
 function onCarrierDied(player,flag)
-	if flag and player then
+	if flag and player and Settings.Carrier == player then
 		RepStorage.GameMessage.Value = player.Name.." has dropped Alpha Team's flag!"
 		flag.Parent = workspace
 		flag.CanCollide = false
