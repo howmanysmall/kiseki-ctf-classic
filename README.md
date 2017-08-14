@@ -1,6 +1,8 @@
 # Kiseki CTF: Classic Edition [v1.2]
 A rescripted version of Clockwork and Conix's game "Kiseki". This is the source code repository in case you wanna see how god awful my coding is.
 
+Play the game here: https://www.roblox.com/games/557896164/Kiseki-CTF-Classic-Edition-SHINOBI-UPDATE#!/about
+
 ## Update Lob [v1.2]
 * Shinobi has been reworked! The class now features a better Assassination tool and a brand new Katana! When right clicking on the Katana, you will be able to dash towards your target (or just to escape).
 * Jetboots system implimented! Some maps were impossible to play up until this point due to how high the flag was.
