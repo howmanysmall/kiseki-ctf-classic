@@ -17,17 +17,16 @@ end
 -------------------------------------------------------------------------------------------------------------------------------------------
 
 local Status = Player:WaitForChild("Status")
+Status.Text = "Nothing."
 local Backpack = Player:WaitForChild("Backpack")
-local buffs = Character.Buffs:GetChildren()
-local names = {}
 
 -------------------------------------------------------------------------------------------------------------------------------------------
 -- Master Function
 -------------------------------------------------------------------------------------------------------------------------------------------
 
 function updateBuffs()
-	buffs = Character.Buffs:GetChildren()
-	names = {}
+	local buffs = Character.Buffs:GetChildren()
+	local names = {}
 	for i,v in ipairs(buffs) do
 		table.insert(names, v.Name)
 	end
