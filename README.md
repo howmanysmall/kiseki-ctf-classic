@@ -1,5 +1,15 @@
-# Kiseki CTF: Classic Edition [v1.1b]
+# Kiseki CTF: Classic Edition [v1.2]
 A rescripted version of Clockwork and Conix's game "Kiseki". This is the source code repository in case you wanna see how god awful my coding is.
+
+## Update Lob [v1.2]
+* Shinobi has been reworked! The class now features a better Assassination tool and a brand new Katana! When right clicking on the Katana, you will be able to dash towards your target (or just to escape).
+* Jetboots system implimented! Some maps were impossible to play up until this point due to how high the flag was.
+* New class system has been implimented! Instead of it being based off of t-shirts, you can now press V on your keyboard to change classes. *Bye bye legacy class system!*
+* UI system has been updated. Now there's a little waiting screen and a new loading screen that actually loads assets!
+* Map system updated! Some maps now feature custom sky boxes and atmosphere.
+* Ice Shards, Soul Bolt, Bash, Pacifism, T-Storm, and Monsoon have been updated to become a lot better.
+* Personality system has been temporary removed til next update (which will probably be v1.2b).
+* Socom and Barrett stats have been updated.
 
 ## Update Log [v1.1]
 * Meat Hook is now functional!
@@ -15,13 +25,9 @@ A rescripted version of Clockwork and Conix's game "Kiseki". This is the source 
 * Modified & cleaned up Meteor, Sac Ritual, Thunderstorm, and Stun Ward. I will probably re-do Meteor and Thunderstorm in the future.
 
 ## Future Changes (for next update)
-* Ice Shards, Soul Bolt, Bash, Abscond, Disarm, Sentry Gun, Bite, Feeding Frenzy, Pacifism, Duress, and Defile will be either reworked into something better, modified, or fixed.
-* Shinobi will be recieving a major overhaul as well.
+* Abscond, Disarm, Sentry Gun, Bite, Feeding Frenzy, Duress, and Defile will be either reworked into something better, modified, or fixed.
 * A ragdoll system will be added too.
-* Example place will be created for those who are interested in using Kiseki CTF: Classic Edition for their own game.
+* Add a new Personality system.
 * Modifying more legacy coding.
-* Adding a Jetboots system.
-* Adding a class UI system.
-* Making the UI system a lot better than it is at the moment.
 
 *Copyright (c) 2016-2017 shloid*
