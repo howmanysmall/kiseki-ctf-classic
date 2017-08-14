@@ -1,10 +1,11 @@
 -------------------------------------------------------------------------------------------------------------------------------------------------------------
--- Game System for Kiseki CTF: Classic Edition 
--- Created by shloid (da man!!!)
+-- Game System 
+-- Scripted by shloid 
 -------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 -- Services
 local Players = game:GetService("Players")
+local Lighting = game:GetService("Lighting")
 local RepStorage = game:GetService("ReplicatedStorage")
 
 -- Variables
@@ -14,8 +15,13 @@ local Settings = {
 	Kills = "Kills";
 	Wipeouts = "Wipeouts";
 	Captures = "Captures";
-	DefaultGameTime = 180;
+	DefaultGameTime = 300;
 	FirstBlood = "None",
+}
+
+local SkyStuff = {
+	Sky = Lighting:WaitForChild("Sky"),
+	ColorCorrection = Lighting:WaitForChild("ColorCorrection"),
 }
 
 -- Main Game Variables
@@ -32,6 +38,7 @@ local Maps = RepStorage:WaitForChild("Maps")
 local _Gv2 = require(RepStorage:WaitForChild("_Gv2"))
 local Sounds = workspace:WaitForChild("Sounds")
 local CapFlag = RepStorage:WaitForChild("CaptureFlag")
+local ServerMsg = RepStorage:WaitForChild("ServerMessage")
 local ReturnFlag = RepStorage:WaitForChild("ReturnFlag")
 local MsgDisplay = RepStorage:WaitForChild("GameMessage")
 local TimeDisplay = RepStorage:WaitForChild("GameTime")
@@ -185,17 +192,56 @@ function setMessage(text)
 	end)
 end
 
+function setServerMessage(text)
+	print("[Server] New message:",text)
+	ServerMsg.Value = text
+end
+
 function setTime()
 	TimeDisplay.Value = GameTime
 end
 
+function setLighting(mod)
+	if mod then
+		-- first lighting
+		Lighting.Ambient = mod.Lighting.Ambient
+		Lighting.Brightness = mod.Lighting.Brightness
+		Lighting.OutdoorAmbient = mod.Lighting.OutdoorAmbient
+		Lighting.GeographicLatitude = mod.Lighting.GeographicLatitude
+		Lighting.TimeOfDay = mod.Lighting.TimeOfDay
+		Lighting.FogColor = mod.Lighting.FogColor
+		Lighting.FogEnd = mod.Lighting.FogEnd
+		
+		-- then the skybox
+		SkyStuff.Sky.CelestialBodiesShown = mod.Skybox.CelestialBodiesShown
+		SkyStuff.Sky.SkyboxBk = "rbxassetid://"..mod.Skybox["Bk"]
+		SkyStuff.Sky.SkyboxDn = "rbxassetid://"..mod.Skybox["Dn"]
+		SkyStuff.Sky.SkyboxFt = "rbxassetid://"..mod.Skybox["Ft"]
+		SkyStuff.Sky.SkyboxLf = "rbxassetid://"..mod.Skybox["Lf"]
+		SkyStuff.Sky.SkyboxRt = "rbxassetid://"..mod.Skybox["Rt"]
+		SkyStuff.Sky.SkyboxUp = "rbxassetid://"..mod.Skybox["Up"]
+		
+		-- finally, colorcorrection
+		SkyStuff.ColorCorrection.Brightness = mod.ColorCorrection.Brightness
+		SkyStuff.ColorCorrection.Contrast = mod.ColorCorrection.Contrast
+		SkyStuff.ColorCorrection.TintColor = mod.ColorCorrection.TintColor
+	end
+end
+
 function selectMap()
 	local returnMap
+	local mapModule
 	local sdk = Maps:GetChildren()
 	local mdr = math.random(1,8)
 	returnMap = sdk[mdr]:Clone()
 	wait(3)
-	setMessage("Next Map: "..returnMap.Name)
+	if returnMap:FindFirstChild("MapModule") then
+		mapModule = require(returnMap:FindFirstChild("MapModule"))
+		setLighting(mapModule)
+		setMessage("Next Map: "..mapModule.MapName.." by "..mapModule.Creator)
+	else
+		setMessage("Next Map: "..returnMap.Name)
+	end 
 	wait(5)
 	if workspace:FindFirstChild(CurrentMap) then
 		workspace:FindFirstChild(CurrentMap):Destroy()
@@ -227,7 +273,7 @@ Players.PlayerAdded:connect(function(player)
 		caps.Name = Settings.Captures
 	end
 	
-	script.ScreenGui:Clone().Parent = player:WaitForChild("PlayerGui")
+	script.MasterGui:Clone().Parent = player:WaitForChild("PlayerGui")
 	script.FPSCounter:Clone().Parent = player:WaitForChild("PlayerGui")
 	
 	--------------------------------------------------------------------------------
@@ -247,6 +293,14 @@ print("[Server] Kiseki CTF Classic Game System has loaded.")
 -------------------------------------------------------------------------------------------------------------------------------------------------------------
 -- Master Loop
 -------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+if _Gv2.debug == true then
+	spawn(function()
+		while wait(10) do
+			setServerMessage("The server is currently in debug mode. If you're in the public version of Kiseki, then please contact shloid ASAP so he can fix this small problem!")
+		end
+	end)
+end
 
 while wait(1) do
 	if _Gv2.debug == false then
