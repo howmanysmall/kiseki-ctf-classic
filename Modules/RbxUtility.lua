@@ -29,8 +29,8 @@
  	CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  ]]--
 
-local t = {}
-local string = string
+local t = { }
+local game = game
 local math = math
 local table = table
 local error = error
@@ -43,21 +43,20 @@ local ipairs = ipairs
 local assert = assert
 local Chipmunk = Chipmunk
 
+local Workspace = game:GetService("Workspace")
 
-local StringBuilder = {
-	buffer = {}
-}
+local StringBuilder = { buffer = { } }
 
 function StringBuilder:New()
-	local o = {}
+	local o = { }
 	setmetatable(o, self)
 	self.__index = self
-	o.buffer = {}
+	o.buffer = { }
 	return o
 end
 
 function StringBuilder:Append(s)
-	self.buffer[#self.buffer+1] = s
+	self.buffer[#self.buffer + 1] = s
 end
 
 function StringBuilder:ToString()
@@ -78,7 +77,7 @@ local JsonWriter = {
 }
 
 function JsonWriter:New()
-	local o = {}
+	local o = { }
 	o.writer = StringBuilder:New()
 	setmetatable(o, self)
 	self.__index = self
@@ -124,10 +123,10 @@ end
 
 function JsonWriter:ParseString(s)
 	self:Append('"')
-	self:Append(string.gsub(s, "[%z%c\\\"/]", function(n)
+	self:Append(s:gsub("[%z%c\\\"/]", function(n)
 		local c = self.backslashes[n]
 		if c then return c end
-		return string.format("\\u%.4X", string.byte(n))
+		return ("\\u%.4X"):format(n:byte())
 	end))
 	self:Append('"')
 end
@@ -178,9 +177,7 @@ function JsonWriter:WriteTable(t)
 end
 
 function JsonWriter:WriteError(o)
-	error(string.format(
-		"Encoding of %s unsupported", 
-		tostring(o)))
+	error(("Encoding of %s unsupported"):format(tostring(o)))
 end
 
 function JsonWriter:WriteFunction(o)
@@ -197,7 +194,7 @@ local StringReader = {
 }
 
 function StringReader:New(s)
-	local o = {}
+	local o = { }
 	setmetatable(o, self)
 	self.__index = self
 	o.s = s or o.s
@@ -207,15 +204,15 @@ end
 function StringReader:Peek()
 	local i = self.i + 1
 	if i <= #self.s then
-		return string.sub(self.s, i, i)
+		return (self.s):sub(i, i)
 	end
 	return nil
 end
 
 function StringReader:Next()
-	self.i = self.i+1
+	self.i = self.i + 1
 	if self.i <= #self.s then
-		return string.sub(self.s, self.i, self.i)
+		return (self.s):sub(self.i, self.i)
 	end
 	return nil
 end
@@ -246,16 +243,14 @@ function JsonReader:Read()
 	self:SkipWhiteSpace()
 	local peek = self:Peek()
 	if peek == nil then
-		error(string.format(
-			"Nil string: '%s'", 
-			self:All()))
+		error(("Nil string: '%s'"):format(self:All()))
 	elseif peek == '{' then
 		return self:ReadObject()
 	elseif peek == '[' then
 		return self:ReadArray()
 	elseif peek == '"' then
 		return self:ReadString()
-	elseif string.find(peek, "[%+%-%d]") then
+	elseif peek:find("[%+%-%d]") then
 		return self:ReadNumber()
 	elseif peek == 't' then
 		return self:ReadTrue()
@@ -272,27 +267,24 @@ function JsonReader:Read()
 end
 		
 function JsonReader:ReadTrue()
-	self:TestReservedWord{'t','r','u','e'}
+	self:TestReservedWord{ 't', 'r', 'u', 'e' }
 	return true
 end
 
 function JsonReader:ReadFalse()
-	self:TestReservedWord{'f','a','l','s','e'}
+	self:TestReservedWord{ 'f', 'a', 'l', 's', 'e' }
 	return false
 end
 
 function JsonReader:ReadNull()
-	self:TestReservedWord{'n','u','l','l'}
+	self:TestReservedWord{ 'n', 'u', 'l', 'l' }
 	return nil
 end
 
 function JsonReader:TestReservedWord(t)
 	for i, v in ipairs(t) do
 		if self:Next() ~= v then
-			 error(string.format(
-				"Error reading '%s': %s", 
-				table.concat(t), 
-				self:All()))
+			 error(("Error reading '%s': %s"):format(table.concat(t), self:All()))
 		end
 	end
 end
@@ -300,17 +292,13 @@ end
 function JsonReader:ReadNumber()
         local result = self:Next()
         local peek = self:Peek()
-        while peek ~= nil and string.find(
-		peek, 
-		"[%+%-%d%.eE]") do
+        while peek and peek:find("[%+%-%d%.eE]") do
             result = result .. self:Next()
             peek = self:Peek()
 	end
 	result = tonumber(result)
 	if result == nil then
-	        error(string.format(
-			"Invalid number: '%s'", 
-			result))
+		error(("Invalid number: '%s'"):format(result))
 	else
 		return result
 	end
@@ -331,12 +319,10 @@ function JsonReader:ReadString()
 	end
         assert(self:Next() == '"')
 	local fromunicode = function(m)
-		return string.char(tonumber(m, 16))
+		local nm = tonumber(m, 16)
+		return nm:char()
 	end
-	return string.gsub(
-		result, 
-		"u%x%x(%x%x)", 
-		fromunicode)
+	return result:gsub("u%x%x(%x%x)", fromunicode)
 end
 
 function JsonReader:ReadComment()
@@ -347,9 +333,7 @@ function JsonReader:ReadComment()
         elseif second == '*' then
             self:ReadBlockComment()
         else
-            error(string.format(
-		"Invalid comment: %s", 
-		self:All()))
+			error(("Invalid comment: %s"):format(self:All()))
 	end
 end
 
@@ -363,9 +347,7 @@ function JsonReader:ReadBlockComment()
 		if not done and 
 			ch == '/' and 
 			self:Peek() == "*" then
-                    error(string.format(
-			"Invalid comment: %s, '/*' illegal.",  
-			self:All()))
+				error(("Invalid comment: %s, '/*' illegal."):format(self:All()))
 		end
 	end
 	self:Next()
@@ -379,15 +361,15 @@ function JsonReader:ReadSingleLineComment()
 end
 
 function JsonReader:ReadArray()
-	local result = {}
+	local result = { }
 	assert(self:Next() == '[')
 	local done = false
 	if self:Peek() == ']' then
-		done = true;
+		done = true
 	end
 	while not done do
 		local item = self:Read()
-		result[#result+1] = item
+		result[#result + 1] = item
 		self:SkipWhiteSpace()
 		if self:Peek() == ']' then
 			done = true
@@ -395,9 +377,7 @@ function JsonReader:ReadArray()
 		if not done then
 			local ch = self:Next()
 			if ch ~= ',' then
-				error(string.format(
-					"Invalid array: '%s' due to: '%s'", 
-					self:All(), ch))
+				error(("Invalid array: '%s' near: '%s'"):format(self:All(), ch))
 			end
 		end
 	end
@@ -406,7 +386,7 @@ function JsonReader:ReadArray()
 end
 
 function JsonReader:ReadObject()
-	local result = {}
+	local result = { }
 	assert(self:Next() == '{')
 	local done = false
 	if self:Peek() == '}' then
@@ -415,17 +395,12 @@ function JsonReader:ReadObject()
 	while not done do
 		local key = self:Read()
 		if type(key) ~= "string" then
-			error(string.format(
-				"Invalid non-string object key: %s", 
-				key))
+			error(("Invalid non-string object key: %s"):format(key))
 		end
 		self:SkipWhiteSpace()
 		local ch = self:Next()
 		if ch ~= ':' then
-			error(string.format(
-				"Invalid object: '%s' due to: '%s'", 
-				self:All(), 
-				ch))
+			error(("Invalid object: '%s' due to: '%s'"):format(self:All(), ch))
 		end
 		self:SkipWhiteSpace()
 		local val = self:Read()
@@ -436,11 +411,8 @@ function JsonReader:ReadObject()
 		end
 		if not done then
 			ch = self:Next()
-                	if ch ~= ',' then
-				error(string.format(
-					"Invalid array: '%s' near: '%s'", 
-					self:All(), 
-					ch))
+        	if ch ~= ',' then
+				error(("Invalid array: '%s' near: '%s'"):format(self:All(), ch))
 			end
 		end
 	end
@@ -450,7 +422,7 @@ end
 
 function JsonReader:SkipWhiteSpace()
 	local p = self:Peek()
-	while p ~= nil and string.find(p, "[%s/]") do
+	while p and p:find("[%s/]") do
 		if p == '/' then
 			self:ReadComment()
 		else
@@ -509,21 +481,21 @@ end
 -- returns true if made a wedge, false if the cell remains a block
 
 t.MakeWedge = function(x, y, z, defaultmaterial)
-	return game:GetService("Terrain"):AutoWedgeCell(x,y,z)
+	return game:GetService("Terrain"):AutoWedgeCell(x, y, z)
 end
 
 t.SelectTerrainRegion = function(regionToSelect, color, selectEmptyCells, selectionParent)
-	local terrain = game.Workspace:FindFirstChild("Terrain")
+	local terrain = Workspace:FindFirstChild("Terrain")
 	if not terrain then return end
 
 	assert(regionToSelect)
 	assert(color)
 
 	if not type(regionToSelect) == "Region3" then
-		error("regionToSelect (first arg), should be of type Region3, but is type",type(regionToSelect))
+		error("regionToSelect (first arg), should be of type Region3, but is type", type(regionToSelect))
 	end
 	if not type(color) == "BrickColor" then
-		error("color (second arg), should be of type BrickColor, but is type",type(color))
+		error("color (second arg), should be of type BrickColor, but is type", type(color))
 	end
 
 	-- frequently used terrain calls (speeds up call, no lookup necessary)
@@ -539,15 +511,15 @@ t.SelectTerrainRegion = function(regionToSelect, color, selectEmptyCells, select
 	if selectionParent then
 		selectionContainer.Parent = selectionParent
 	else
-		selectionContainer.Parent = game.Workspace
+		selectionContainer.Parent = Workspace
 	end
 
 	local updateSelection = nil -- function we return to allow user to update selection
 	local currentKeepAliveTag = nil -- a tag that determines whether adorns should be destroyed
 	local aliveCounter = 0 -- helper for currentKeepAliveTag
 	local lastRegion = nil -- used to stop updates that do nothing
-	local adornments = {} -- contains all adornments
-	local reusableAdorns = {}
+	local adornments = { } -- contains all adornments
+	local reusableAdorns = { }
 
 	local selectionPart = Instance.new("Part")
 	selectionPart.Name = "SelectionPart"
@@ -555,21 +527,20 @@ t.SelectTerrainRegion = function(regionToSelect, color, selectEmptyCells, select
 	selectionPart.Anchored = true
 	selectionPart.Locked = true
 	selectionPart.CanCollide = false
-	selectionPart.FormFactor = Enum.FormFactor.Custom
-	selectionPart.Size = Vector3.new(4.2,4.2,4.2)
+	selectionPart.Size = Vector3.new(4.2, 4.2, 4.2)
 
 	local selectionBox = Instance.new("SelectionBox")
 
 	-- srs translation from region3 to region3int16
 	function Region3ToRegion3int16(region3)
-		local theLowVec = region3.CFrame.p - (region3.Size/2) + Vector3.new(2,2,2)
+		local theLowVec = region3.CFrame.p - (region3.Size * 0.5) + Vector3.new(2, 2, 2)
 		local lowCell = WorldToCellPreferSolid(terrain,theLowVec)
 
-		local theHighVec = region3.CFrame.p + (region3.Size/2) - Vector3.new(2,2,2)
+		local theHighVec = region3.CFrame.p + (region3.Size * 0.5) - Vector3.new(2, 2, 2)
 		local highCell = WorldToCellPreferSolid(terrain, theHighVec)
 
-		local highIntVec = Vector3int16.new(highCell.x,highCell.y,highCell.z)
-		local lowIntVec = Vector3int16.new(lowCell.x,lowCell.y,lowCell.z)
+		local highIntVec = Vector3int16.new(highCell.x, highCell.y, highCell.z)
+		local lowIntVec = Vector3int16.new(lowCell.x, lowCell.y, lowCell.z)
 
 		return Region3int16.new(lowIntVec,highIntVec)
 	end
@@ -582,7 +553,7 @@ t.SelectTerrainRegion = function(regionToSelect, color, selectEmptyCells, select
 		if #reusableAdorns > 0 then
 			selectionPartClone = reusableAdorns[1]["part"]
 			selectionBoxClone = reusableAdorns[1]["box"]
-			table.remove(reusableAdorns,1)
+			table.remove(reusableAdorns, 1)
 
 			selectionBoxClone.Visible = true
 		else
@@ -630,8 +601,8 @@ t.SelectTerrainRegion = function(regionToSelect, color, selectEmptyCells, select
 
 	-- finds full cells in region and adorns each cell with a box, with the argument color
 	function adornFullCellsInRegion(region, color)
-		local regionBegin = region.CFrame.p - (region.Size/2) + Vector3.new(2,2,2)
-		local regionEnd = region.CFrame.p + (region.Size/2) - Vector3.new(2,2,2)
+		local regionBegin = region.CFrame.p - (region.Size * 0.5) + Vector3.new(2, 2, 2)
+		local regionEnd = region.CFrame.p + (region.Size * 0.5) - Vector3.new(2, 2, 2)
 
 		local cellPosBegin = WorldToCellPreferSolid(terrain, regionBegin)
 		local cellPosEnd = WorldToCellPreferSolid(terrain, regionEnd)
@@ -644,7 +615,7 @@ t.SelectTerrainRegion = function(regionToSelect, color, selectEmptyCells, select
 					
 					if cellMaterial ~= emptyMaterial then
 						local cframePos = CellCenterToWorld(terrain, x, y, z)
-						local cellPos = Vector3int16.new(x,y,z)
+						local cellPos = Vector3int16.new(x, y, z)
 
 						local updated = false
 						for cellPosAdorn, adornTable in pairs(adornments) do
@@ -660,9 +631,9 @@ t.SelectTerrainRegion = function(regionToSelect, color, selectEmptyCells, select
 
 						if not updated then
 							local selectionPart, selectionBox = createAdornment(color)
-							selectionPart.Size = Vector3.new(4,4,4)
+							selectionPart.Size = Vector3.new(4, 4, 4)
 							selectionPart.CFrame = CFrame.new(cframePos)
-							local adornTable = {SelectionPart = selectionPart, SelectionBox = selectionBox, KeepAlive = currentKeepAliveTag}
+							local adornTable = { SelectionPart = selectionPart, SelectionBox = selectionBox, KeepAlive = currentKeepAliveTag }
 							adornments[cellPos] = adornTable
 						end
 					end
@@ -684,7 +655,7 @@ t.SelectTerrainRegion = function(regionToSelect, color, selectEmptyCells, select
 		adornments.SelectionBox = selectionBox
 
 		updateSelection = 
-			function (newRegion, color)
+			function(newRegion, color)
 				if newRegion and newRegion ~= lastRegion then
 					lastRegion = newRegion
 				 	selectionPart.Size = newRegion.Size
@@ -697,7 +668,7 @@ t.SelectTerrainRegion = function(regionToSelect, color, selectEmptyCells, select
 	else -- use individual cell adorns to represent the area selected
 		adornFullCellsInRegion(regionToSelect, color)
 		updateSelection = 
-			function (newRegion, color)
+			function(newRegion, color)
 				if newRegion and newRegion ~= lastRegion then
 					lastRegion = newRegion
 					adornFullCellsInRegion(newRegion, color)
@@ -748,10 +719,10 @@ Method :wait()
 ]]--
 
 function t.CreateSignal()
-	local this = {}
+	local this = { }
 
 	local mBindableEvent = Instance.new('BindableEvent')
-	local mAllCns = {} --all connection objects returned by mBindableEvent::connect
+	local mAllCns = { } --all connection objects returned by mBindableEvent::connect
 
 	--main functions
 	function this:connect(func)
@@ -759,11 +730,11 @@ function t.CreateSignal()
 		if type(func) ~= 'function' then
 			error("Argument #1 of connect must be a function, got a "..type(func), 2)
 		end
-		local cn = mBindableEvent.Event:connect(func)
+		local cn = mBindableEvent.Event:Connect(func)
 		mAllCns[cn] = true
-		local pubCn = {}
-		function pubCn:disconnect()
-			cn:disconnect()
+		local pubCn = { }
+		function pubCn:Disconnect()
+			cn:Disconnect()
 			mAllCns[cn] = nil
 		end
 		return pubCn
@@ -771,13 +742,13 @@ function t.CreateSignal()
 	function this:disconnect()
 		if self ~= this then error("disconnect must be called with `:`, not `.`", 2) end
 		for cn, _ in pairs(mAllCns) do
-			cn:disconnect()
+			cn:Disconnect()
 			mAllCns[cn] = nil
 		end
 	end
 	function this:wait()
 		if self ~= this then error("wait must be called with `:`, not `.`", 2) end
-		return mBindableEvent.Event:wait()
+		return mBindableEvent.Event:Wait()
 	end
 	function this:fire(...)
 		if self ~= this then error("fire must be called with `:`, not `.`", 2) end
@@ -889,7 +860,7 @@ local function Create_PrivImpl(objectType)
 	--Both can be chained together for the nice effect.
 	return function(dat)
 		--default to nothing, to handle the no argument given case
-		dat = dat or {}
+		dat = dat or { }
 
 		--make the object to mutate
 		local obj = Instance.new(objectType)
@@ -906,7 +877,7 @@ local function Create_PrivImpl(objectType)
 			--add child
 			elseif type(k) == 'number' then
 				if type(v) ~= 'userdata' then
-					error("Bad entry in Create body: Numeric keys must be paired with children, got a: "..type(v), 2)
+					error("Bad entry in Create body: Numeric keys must be paired with children, got a: " .. type(v), 2)
 				end
 				v.Parent = obj
 
@@ -914,8 +885,8 @@ local function Create_PrivImpl(objectType)
 			--event connect
 			elseif type(k) == 'table' and k.__eventname then
 				if type(v) ~= 'function' then
-					error("Bad entry in Create body: Key `[Create.E\'"..k.__eventname.."\']` must have a function value\
-					       got: "..tostring(v), 2)
+					error("Bad entry in Create body: Key `[Create.E\'" .. k.__eventname .. "\']` must have a function value\
+					       got: " .. tostring(v), 2)
 				end
 				obj[k.__eventname]:connect(v)
 
@@ -924,7 +895,7 @@ local function Create_PrivImpl(objectType)
 			elseif k == t.Create then
 				if type(v) ~= 'function' then
 					error("Bad entry in Create body: Key `[Create]` should be paired with a constructor function, \
-					       got: "..tostring(v), 2)
+					       got: " .. tostring(v), 2)
 				elseif ctor then
 					--ctor already exists, only one allowed
 					error("Bad entry in Create body: Only one constructor function is allowed", 2)
@@ -933,7 +904,7 @@ local function Create_PrivImpl(objectType)
 
 
 			else
-				error("Bad entry ("..tostring(k).." => "..tostring(v)..") in Create body", 2)
+				error("Bad entry (" .. tostring(k) .. " => "..tostring(v) .. ") in Create body", 2)
 			end
 		end
 
@@ -948,12 +919,12 @@ local function Create_PrivImpl(objectType)
 end
 
 --now, create the functor:
-t.Create = setmetatable({}, {__call = function(tb, ...) return Create_PrivImpl(...) end})
+t.Create = setmetatable({ }, { __call = function(tb, ...) return Create_PrivImpl(...) end })
 
 --and create the "Event.E" syntax stub. Really it's just a stub to construct a table which our Create
 --function can recognize as special.
 t.Create.E = function(eventName)
-	return {__eventname = eventName}
+	return { __eventname = eventName }
 end
 
 ------------------------------------------------------------------------------------------------------------------------
@@ -976,8 +947,8 @@ t.Help =
 		if funcNameOrFunc == "MakeWedge" or funcNameOrFunc == t.MakeWedge then
 			return "Function MakeWedge. " ..
 			       "Arguments: (x, y, z, [default material]). " ..
-			       "Description: Makes a wedge at location x, y, z. Sets cell x, y, z to default material if "..
-			       "parameter is provided, if not sets cell x, y, z to be whatever material it previously was. "..
+			       "Description: Makes a wedge at location x, y, z. Sets cell x, y, z to default material if " ..
+			       "parameter is provided, if not sets cell x, y, z to be whatever material it previously was. " ..
 			       "Returns true if made a wedge, false if the cell remains a block "
 		end
 		if funcNameOrFunc == "SelectTerrainRegion" or funcNameOrFunc == t.SelectTerrainRegion then
@@ -992,52 +963,52 @@ t.Help =
 			       "Also returns a second function that takes no arguments and destroys the selection"
 		end
 		if funcNameOrFunc == "CreateSignal" or funcNameOrFunc == t.CreateSignal then
-			return "Function CreateSignal. "..
-			       "Arguments: None. "..
-			       "Returns: The newly created Signal object. This object is identical to the RBXScriptSignal class "..
-			       "used for events in Objects, but is a Lua-side object so it can be used to create custom events in"..
-			       "Lua code. "..
-			       "Methods of the Signal object: :connect, :wait, :fire, :disconnect. "..
-			       "For more info you can pass the method name to the Help function, or view the wiki page "..
+			return "Function CreateSignal. " ..
+			       "Arguments: None. " ..
+			       "Returns: The newly created Signal object. This object is identical to the RBXScriptSignal class " ..
+			       "used for events in Objects, but is a Lua-side object so it can be used to create custom events in" ..
+			       "Lua code. " ..
+			       "Methods of the Signal object: :connect, :wait, :fire, :disconnect. " ..
+			       "For more info you can pass the method name to the Help function, or view the wiki page " ..
 			       "for this library. EG: Help('Signal:connect')."
 		end
 		if funcNameOrFunc == "Signal:connect" then
-			return "Method Signal:connect. "..
-			       "Arguments: (function handler). "..
-			       "Return: A connection object which can be used to disconnect the connection to this handler. "..
-			       "Description: Connectes a handler function to this Signal, so that when |fire| is called the "..
+			return "Method Signal:connect. " ..
+			       "Arguments: (function handler). " ..
+			       "Return: A connection object which can be used to disconnect the connection to this handler. " ..
+			       "Description: Connectes a handler function to this Signal, so that when |fire| is called the " ..
 			       "handler function will be called with the arguments passed to |fire|."
 		end
 		if funcNameOrFunc == "Signal:wait" then
-			return "Method Signal:wait. "..
-			       "Arguments: None. "..
-			       "Returns: The arguments passed to the next call to |fire|. "..
-			       "Description: This call does not return until the next call to |fire| is made, at which point it "..
+			return "Method Signal:wait. " ..
+			       "Arguments: None. " ..
+			       "Returns: The arguments passed to the next call to |fire|. " ..
+			       "Description: This call does not return until the next call to |fire| is made, at which point it " ..
 			       "will return the values which were passed as arguments to that |fire| call."
 		end
 		if funcNameOrFunc == "Signal:fire" then
-			return "Method Signal:fire. "..
-			       "Arguments: Any number of arguments of any type. "..
-			       "Returns: None. "..
-			       "Description: This call will invoke any connected handler functions, and notify any waiting code "..
-			       "attached to this Signal to continue, with the arguments passed to this function. Note: The calls "..
-			       "to handlers are made asynchronously, so this call will return immediately regardless of how long "..
+			return "Method Signal:fire. " ..
+			       "Arguments: Any number of arguments of any type. " ..
+			       "Returns: None. " ..
+			       "Description: This call will invoke any connected handler functions, and notify any waiting code " ..
+			       "attached to this Signal to continue, with the arguments passed to this function. Note: The calls " ..
+			       "to handlers are made asynchronously, so this call will return immediately regardless of how long " ..
 			       "it takes the connected handler functions to complete."
 		end
 		if funcNameOrFunc == "Signal:disconnect" then
-			return "Method Signal:disconnect. "..
-			       "Arguments: None. "..
-			       "Returns: None. "..
-			       "Description: This call disconnects all handlers attacched to this function, note however, it "..
-			       "does NOT make waiting code continue, as is the behavior of normal Roblox events. This method "..
-			       "can also be called on the connection object which is returned from Signal:connect to only "..
+			return "Method Signal:disconnect. " ..
+			       "Arguments: None. " ..
+			       "Returns: None. " ..
+			       "Description: This call disconnects all handlers attacched to this function, note however, it " ..
+			       "does NOT make waiting code continue, as is the behavior of normal Roblox events. This method " ..
+			       "can also be called on the connection object which is returned from Signal:connect to only " ..
 			       "disconnect a single handler, as opposed to this method, which will disconnect all handlers."
 		end
 		if funcNameOrFunc == "Create" then
-			return "Function Create. "..
-			       "Arguments: A table containing information about how to construct a collection of objects. "..
-			       "Returns: The constructed objects. "..
-			       "Descrition: Create is a very powerfull function, whose description is too long to fit here, and "..
+			return "Function Create. " ..
+			       "Arguments: A table containing information about how to construct a collection of objects. " ..
+			       "Returns: The constructed objects. " ..
+			       "Descrition: Create is a very powerfull function, whose description is too long to fit here, and " ..
 			       "is best described via example, please see the wiki page for a description of how to use it."
 		end
 	end
