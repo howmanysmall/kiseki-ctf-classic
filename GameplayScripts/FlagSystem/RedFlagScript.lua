@@ -19,20 +19,21 @@ local ReturnFlag = RepStorage:WaitForChild("ReturnFlag")
 
 -- Game Essentials
 local Settings = {
-	TeamColor = BrickColor.new("Bright red");
-	PickedUp = false;
-	AtSpawn = true;
-	Carrier = nil;
-	ReturnFlagOnDrop = true;
+	TeamColor = BrickColor.new("Bright red"),
+	PickedUp = false,
+	AtSpawn = true,
+	Carrier = nil,
+	ReturnFlagOnDrop = true,
 	FlagRespawnTime = 60
 }
 
 local FlagCopy = FlagHandle:Clone()
 FlagCopy.Parent = RepStorage.FlagContent
-local FlagCarrier = {}
+local FlagCarrier = { }
 
-local FlagDestroyed = Instance.new("BoolValue",Self)
+local FlagDestroyed = Instance.new("BoolValue")
 FlagDestroyed.Name = "flagDestroyed"
+FlagDestroyed.Parent = Self
 
 --------------------------------------------------------------------------------------------------------------------------------
 -- Functions / Methods
@@ -49,9 +50,9 @@ function destroyFlag(targ)
 	targ:Destroy()
 end
 
-function onCarrierDied(player,flag)
+function onCarrierDied(player, flag)
 	if flag and player and Settings.Carrier == player then
-		RepStorage.GameMessage.Value = player.Name.." has dropped Alpha Team's flag!"
+		RepStorage.GameMessage.Value = player.Name .. " has dropped Alpha Team's flag!"
 		flag.Parent = workspace
 		flag.CanCollide = false
 		flag.Anchored = true
@@ -68,7 +69,7 @@ function onCarrierDied(player,flag)
 end
 
 function pickupFlag(player)
-	RepStorage.GameMessage.Value = ""..player.Name.." has taken Alpha Team's flag!"
+	RepStorage.GameMessage.Value = "" .. player.Name .. " has taken Alpha Team's flag!"
 	if workspace:FindFirstChild("Sounds"):FindFirstChild("FlagCaptured") then
 		workspace:FindFirstChild("Sounds"):FindFirstChild("FlagCaptured"):Play()
 	end
@@ -83,19 +84,20 @@ function pickupFlag(player)
 	FlagHandle.Anchored = false
 	FlagHandle.CanCollide = false
 	
-	local weld = Instance.new('Weld',FlagHandle)
+	local weld = Instance.new('Weld')
 	weld.Name = 'PlayerFlagWeld'
 	weld.Part0 = FlagHandle
 	weld.Part1 = torso
-	weld.C0 = CFrame.new(0,0,-1)
+	weld.C0 = CFrame.new(0, 0, -1)
+	weld.Parent = FlagHandle
 	
-	humanoid.Died:connect(function()
-		onCarrierDied(player,FlagHandle)
+	humanoid.Died:Connect(function()
+		onCarrierDied(player, FlagHandle)
 	end)
 end
 
 function bindFlagTouched(targ)
-	targ.Touched:connect(function(newTarg)
+	targ.Touched:Connect(function(newTarg)
 		if Players:GetPlayerFromCharacter(newTarg.Parent) then
 			local player = Players:GetPlayerFromCharacter(newTarg.Parent) 
 			local humanoid = newTarg.Parent:FindFirstChild('Humanoid')
@@ -125,7 +127,7 @@ function createNewFlag()
 end
 
 function bindBaseTouched(base)
-	base.Touched:connect(function(otherPart)
+	base.Touched:Connect(function(otherPart)
 		if Players:GetPlayerFromCharacter(otherPart.Parent) then
 			local player = Players:GetPlayerFromCharacter(otherPart.Parent)
 			if player.TeamColor == Settings.TeamColor then
@@ -148,7 +150,7 @@ end
 bindFlagTouched(FlagHandle)
 bindBaseTouched(FlagStand)
 
-FlagDestroyed.Changed:connect(function(v)
+FlagDestroyed.Changed:Connect(function(v)
 	if v == true then
 		createNewFlag()
 	end
